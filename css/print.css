@@ -1,0 +1,61 @@
+/* Print styles */
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .sidebar,
+  .controls,
+  .view-toggle,
+  .intro,
+  .header-actions,
+  .modal-nav,
+  .modal-close,
+  .spinner,
+  .error {
+    display: none !important;
+  }
+
+  .layout,
+  #proposals-list {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .proposal-card {
+    border: none;
+    page-break-after: always;
+    padding: 20mm;
+  }
+
+  .proposal-card:last-child {
+    page-break-after: auto;
+  }
+
+  .cover-image {
+    height: auto;
+    max-height: 120mm;
+    object-fit: contain;
+  }
+
+  .card-status,
+  .status,
+  .permalink-btn {
+    display: none !important;
+  }
+
+  .summary,
+  .details-content {
+    display: block;
+    white-space: pre-line;
+    -webkit-line-clamp: initial;
+    -webkit-box-orient: initial;
+    overflow: visible;
+  }
+}

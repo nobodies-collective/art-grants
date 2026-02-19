@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Art Grants</title>
+    <link
+      rel="stylesheet"
+      href="css/main.css" />
+  </head>
+  <body>
+    <div class="page-wrap">
+      <h1 class="visually-hidden">Art Grants</h1>
 
+      <div class="layout">
+        <aside class="sidebar">
+          <section class="intro">
+            <p class="intro-label">Art Grants</p>
+            <p>
+              This platform displays art grant proposals. Proposals are submitted through a form and added to a spreadsheet,
+              which populates this site. Browse proposals or
+              <a
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeaQyd21DJEvOAyzrfXpKvn1rVGmH_IpoGedWLQolEoZ-zIIQ/viewform?usp=header"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-link"
+                >submit your own</a
+              >.
+            </p>
+            <p class="intro-count"><span id="proposal-count">0/0</span> proposals listed.</p>
+            <p>
+              This page also serves as a history of previous art projects. If you are the artist and want to update your description or images, please reach out to
+              <a href="mailto:jns.johansson@gmail.com">jns.johansson@gmail.com</a>.
+              Most images are sourced from
+              <a
+                href="https://www.sourcesplash.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                >sourcesplash.com</a
+              > and <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">unsplash.com</a>.
+            </p>
+            <p>
+              Made by
+              <a
+                href="https://jonasjohansson.se"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Jonas Johansson</a
+              >.
+            </p>
+          </section>
+          <section
+            class="controls"
+            aria-label="Filters and sorting">
+            <div
+              class="status-filters"
+              role="group"
+              aria-label="Filter by status">
+              <button
+                type="button"
+                class="status-chip status funded is-active"
+                data-status="funded"
+                aria-pressed="true">
+                Funded
+              </button>
+              <button
+                type="button"
+                class="status-chip status not-funded is-active"
+                data-status="not-funded"
+                aria-pressed="true">
+                Not Funded
+              </button>
+              <button
+                type="button"
+                class="status-chip status under-review is-active"
+                data-status="under-review"
+                aria-pressed="true">
+                Under Review
+              </button>
+              <button
+                type="button"
+                class="status-chip status self-funded is-active"
+                data-status="self-funded"
+                aria-pressed="true">
+                Self-funded
+              </button>
+            </div>
+            <div
+              class="year-filters"
+              role="group"
+              aria-label="Filter by year"
+              id="year-filters-container">
+            </div>
+            <div class="controls-right">
+              <div class="sort-control">
+                <label for="sort-select">Sort</label>
+                <select id="sort-select">
+                  <option value="">Default order</option>
+                  <option value="title-asc">Title A → Z</option>
+                  <option value="title-desc">Title Z → A</option>
+                  <option value="year-asc">Year ↑</option>
+                  <option value="year-desc">Year ↓</option>
+                  <option value="category">Category</option>
+                  <option value="status">Status</option>
+                </select>
+              </div>
+              <div
+                class="view-toggle"
+                role="group"
+                aria-label="View mode">
+                <button
+                  type="button"
+                  class="view-button is-active"
+                  data-view="cards"
+                  aria-pressed="true">
+                  Cards
+                </button>
+                <button
+                  type="button"
+                  class="view-button"
+                  data-view="table"
+                  aria-pressed="false">
+                  Table
+                </button>
+              </div>
+            </div>
+            <div class="search-control">
+              <label for="search-input">Search</label>
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Search by artist, title, or description..."
+                aria-label="Search proposals" />
+            </div>
+          </section>
+        </aside>
+
+        <section class="content">
+          <div
+            id="loading"
+            class="loading">
+            <div class="spinner"></div>
+            <p>Loading proposals...</p>
+          </div>
+          <div
+            id="error"
+            class="error"
+            style="display: none"></div>
+          <div id="proposals-list"></div>
+        </section>
+      </div>
+    </div>
+    <script
+      type="module"
+      src="js/main.js"></script>
+  </body>
+</html>

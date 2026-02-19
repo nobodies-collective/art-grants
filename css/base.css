@@ -1,0 +1,57 @@
+/* Base styles */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+
+:root {
+  --bg: #ffffff;
+  --card-bg: #ffffff;
+  --text: #050505;
+  --muted: #161616;
+  --border: #d7d7d7;
+  --accent: #d7d7d7;
+  --space: 1rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  padding: var(--space);
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 11px;
+    letter-spacing: 0.01em;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
