@@ -133,6 +133,10 @@ h1 {
   gap: 0.5rem;
 }
 
+.search-control {
+  width: 100%;
+}
+
 .search-control label {
   display: none;
 }
@@ -145,7 +149,7 @@ h1 {
   font-family: inherit;
   letter-spacing: 0.02em;
   border-radius: 6px;
-  width: 140px;
+  width: 100%;
 }
 
 .search-control input:focus {

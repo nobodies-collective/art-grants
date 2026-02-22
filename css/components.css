@@ -26,7 +26,6 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .card-thumb {
@@ -154,6 +153,9 @@
   font-size: var(--font-size);
   letter-spacing: 0.02em;
   opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .category-row {
@@ -184,9 +186,9 @@
 }
 
 .proposal-card .card-body {
-  display: flex;
-  flex-direction: column;
   flex: 1;
+  min-height: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
 }
 
 .summary {
@@ -195,12 +197,9 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
-  box-orient: vertical;
   overflow: hidden;
   line-height: 1.5;
   letter-spacing: 0.02em;
-  text-overflow: ellipsis;
-  padding: 0.5rem 0.75rem 0.75rem;
   font-size: var(--font-size);
 }
 
