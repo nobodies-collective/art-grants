@@ -1,0 +1,94 @@
+/* Full project page */
+
+.project-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 0 2rem;
+}
+
+.project-header {
+  margin-bottom: 1.5rem;
+}
+
+.project-back {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.4rem 0;
+  margin-bottom: 0.75rem;
+  opacity: 0.6;
+  transition: opacity 0.1s ease;
+}
+
+.project-back:hover {
+  opacity: 1;
+}
+
+.project-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.5rem;
+  text-align: left;
+  text-transform: none;
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.project-card {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+
+.project-page[data-status="funded"] .project-card {
+  border-top-color: #00c853;
+  border-top-width: 3px;
+}
+
+.project-page[data-status="not-funded"] .project-card {
+  border-top-color: #d50000;
+  border-top-width: 3px;
+}
+
+.project-page[data-status="under-review"] .project-card {
+  border-top-color: #ffab00;
+  border-top-width: 3px;
+}
+
+.project-page[data-status="self-funded"] .project-card {
+  border-top-color: #2196f3;
+  border-top-width: 3px;
+}
+
+.project-page .chat-section {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  padding: 1.25rem;
+}
+
+.project-page .chat-messages {
+  max-height: 500px;
+}
+
+@media (max-width: 600px) {
+  .project-page {
+    padding: 0 0 1rem;
+  }
+
+  .project-title {
+    font-size: 1.2rem;
+  }
+}

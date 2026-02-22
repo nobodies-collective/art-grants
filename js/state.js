@@ -14,6 +14,7 @@ export const state = {
   filteredList: [],
   suppressNavChange: false,
   searchQuery: '',
+  currentProjectPage: null,
 };
 
 

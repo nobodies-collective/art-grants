@@ -13,6 +13,12 @@
  *    - Who has access: Anyone
  * 6. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
+ * PASSPHRASE SETUP:
+ * Create a tab called "_codes" in the spreadsheet with two columns:
+ *   Column A: Project slug (e.g. "light-installation-2026")
+ *   Column B: Passphrase (e.g. "sun42")
+ * Only people who know the passphrase can post messages.
+ *
  * NOTE: Each time you update this script, create a NEW deployment
  * (Deploy → Manage deployments → Edit → New version)
  */
@@ -24,36 +30,60 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var project = (data.project || '').trim();
     var author = (data.author || '').trim();
-    var role = (data.role || '').trim();
+    var code = (data.code || '').trim();
     var message = (data.message || '').trim();
 
     if (!project || !author || !message) {
-      return jsonResponse({ error: 'Missing required fields: project, author, message' }, 400);
+      return jsonResponse({ error: 'Missing required fields: project, author, message' });
+    }
+
+    if (!code) {
+      return jsonResponse({ error: 'Passphrase is required' });
     }
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+
+    // Verify passphrase
+    if (!verifyCode(ss, project, code)) {
+      return jsonResponse({ error: 'Invalid passphrase' });
+    }
+
     var tab = ss.getSheetByName(project);
 
     if (!tab) {
       tab = ss.insertSheet(project);
       tab.appendRow(['Timestamp', 'Author', 'Role', 'Message']);
-      // Freeze the header row
       tab.setFrozenRows(1);
     }
 
-    tab.appendRow([new Date(), author, role, message]);
+    tab.appendRow([new Date(), author, '', message]);
 
     return jsonResponse({ ok: true });
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    return jsonResponse({ error: err.message });
   }
+}
+
+function verifyCode(ss, project, code) {
+  var codesTab = ss.getSheetByName('_codes');
+  if (!codesTab) return false;
+
+  var data = codesTab.getDataRange().getValues();
+  for (var i = 0; i < data.length; i++) {
+    var slug = (data[i][0] || '').toString().trim();
+    var passphrase = (data[i][1] || '').toString().trim();
+    if (slug === project && passphrase === code) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function doGet(e) {
   try {
     var project = (e.parameter.project || '').trim();
     if (!project) {
-      return jsonResponse({ error: 'Missing project parameter' }, 400);
+      return jsonResponse({ error: 'Missing project parameter' });
     }
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -76,11 +106,11 @@ function doGet(e) {
 
     return jsonResponse(messages);
   } catch (err) {
-    return jsonResponse({ error: err.message }, 500);
+    return jsonResponse({ error: err.message });
   }
 }
 
-function jsonResponse(data, code) {
+function jsonResponse(data) {
   var output = ContentService.createTextOutput(JSON.stringify(data));
   output.setMimeType(ContentService.MimeType.JSON);
   return output;

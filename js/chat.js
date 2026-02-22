@@ -8,7 +8,6 @@ let knownTabs = null;
 
 async function fetchTabList() {
   if (knownTabs) return knownTabs;
-  // Fetch the published HTML to discover sheet tab names and gids
   const url = `https://docs.google.com/spreadsheets/d/e/${CHAT_SPREADSHEET_ID}/pubhtml`;
   try {
     const res = await fetch(url);
@@ -74,7 +73,6 @@ function parseChatCSV(text) {
   if (field || row.length) { row.push(field.trim()); if (row.some(c => c)) lines.push(row); }
   if (lines.length < 2) return [];
 
-  // Expect columns: Timestamp, Author, Role, Message
   return lines.slice(1).map(r => ({
     timestamp: r[0] || '',
     author: r[1] || '',
@@ -83,15 +81,18 @@ function parseChatCSV(text) {
   }));
 }
 
-async function postChatMessage(slug, author, role, message) {
+async function postChatMessage(slug, author, code, message) {
   if (!CHAT_SCRIPT_URL) {
     throw new Error('Chat posting is not configured. Set CHAT_SCRIPT_URL in constants.js.');
   }
   const res = await fetch(CHAT_SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ project: slug, author, role, message }),
+    body: JSON.stringify({ project: slug, author, code, message }),
   });
   if (!res.ok) throw new Error('Failed to post message');
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
 }
 
 function formatTimestamp(raw) {
@@ -120,7 +121,6 @@ export function createChatSection(proposal) {
   messagesEl.innerHTML = '<p class="chat-loading">Loading discussion...</p>';
   container.appendChild(messagesEl);
 
-  // Load messages
   fetchChatMessages(proposal.slug).then((messages) => {
     messagesEl.innerHTML = '';
     if (!messages.length) {
@@ -129,55 +129,66 @@ export function createChatSection(proposal) {
       messages.forEach((msg) => {
         messagesEl.appendChild(renderMessage(msg));
       });
-      // scroll to bottom
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
   });
 
-  // Post form (only if script URL is configured)
   if (CHAT_SCRIPT_URL) {
     const form = document.createElement('form');
     form.className = 'chat-form';
     form.innerHTML = `
-      <input type="text" name="author" class="chat-input chat-author" placeholder="Your name" required />
+      <div class="chat-form-row">
+        <input type="text" name="author" class="chat-input chat-author" placeholder="Your name" required />
+        <input type="text" name="code" class="chat-input chat-code" placeholder="Passphrase" required />
+      </div>
       <div class="chat-compose">
         <textarea name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
         <button type="submit" class="chat-send">Send</button>
       </div>
     `;
+
+    const errorEl = document.createElement('p');
+    errorEl.className = 'chat-error';
+    errorEl.style.display = 'none';
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errorEl.style.display = 'none';
       const authorInput = form.querySelector('[name="author"]');
+      const codeInput = form.querySelector('[name="code"]');
       const messageInput = form.querySelector('[name="message"]');
       const btn = form.querySelector('.chat-send');
       const author = authorInput.value.trim();
+      const code = codeInput.value.trim();
       const message = messageInput.value.trim();
-      if (!author || !message) return;
+      if (!author || !code || !message) return;
 
       btn.disabled = true;
       btn.textContent = 'Sending...';
       try {
-        await postChatMessage(proposal.slug, author, '', message);
+        await postChatMessage(proposal.slug, author, code, message);
         messageInput.value = '';
         // Refresh messages
+        knownTabs = null;
         const messages = await fetchChatMessages(proposal.slug);
         messagesEl.innerHTML = '';
-        messages.forEach((msg) => messagesEl.appendChild(renderMessage(msg)));
-        messagesEl.scrollTop = messagesEl.scrollHeight;
-        // Invalidate tab cache so new tabs are discovered on next load
-        knownTabs = null;
+        if (!messages.length) {
+          messagesEl.innerHTML = '<p class="chat-empty">No messages yet.</p>';
+        } else {
+          messages.forEach((msg) => messagesEl.appendChild(renderMessage(msg)));
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
       } catch (err) {
         console.error('Chat send error:', err);
-        const errEl = document.createElement('p');
-        errEl.className = 'chat-error';
-        errEl.textContent = 'Failed to send message. Please try again.';
-        messagesEl.appendChild(errEl);
+        errorEl.textContent = err.message || 'Failed to send message. Please try again.';
+        errorEl.style.display = '';
       } finally {
         btn.disabled = false;
         btn.textContent = 'Send';
       }
     });
     container.appendChild(form);
+    container.appendChild(errorEl);
   }
 
   return container;

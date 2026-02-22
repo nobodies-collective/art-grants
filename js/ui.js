@@ -88,8 +88,20 @@ function attachEventListeners() {
     if (state.suppressNavChange) return;
     const slug = getSlugFromPath();
     if (slug) {
+      // Close existing project page if open
+      if (state.currentProjectPage) {
+        state.currentProjectPage.remove();
+        state.currentProjectPage = null;
+      }
       const proposal = state.proposalData.find((item) => item.slug === slug);
-      if (proposal) openProposalModal(proposal);
+      if (proposal) openProposalPage(proposal);
+    } else {
+      // Back to listing
+      if (state.currentProjectPage) {
+        state.currentProjectPage.remove();
+        state.currentProjectPage = null;
+        document.querySelector('.layout').style.display = '';
+      }
     }
   });
 }
@@ -162,7 +174,7 @@ async function loadData() {
     if (initialSlug) {
       const initialProposal = state.proposalData.find((item) => item.slug === initialSlug);
       if (initialProposal) {
-        openProposalModal(initialProposal);
+        openProposalPage(initialProposal);
       }
     }
   } catch (error) {
@@ -313,7 +325,7 @@ function renderProposals() {
       } else {
         card.classList.add('no-animation');
       }
-      card.addEventListener('click', () => openProposalModal(proposal));
+      card.addEventListener('click', () => openProposalPage(proposal));
       proposalsContainer.appendChild(card);
       cardElements.set(proposal.uniqueKey, card);
     });
@@ -539,7 +551,7 @@ function buildTable(list) {
     )}</span>`;
 
     tr.append(titleTd, yearTd, categoryTd, descriptionTd, statusTd);
-    tr.addEventListener('click', () => openProposalModal(proposal));
+    tr.addEventListener('click', () => openProposalPage(proposal));
     tbody.appendChild(tr);
   });
 
@@ -555,152 +567,74 @@ function formatAuthor(proposal) {
   return `<div class="author">${escapeHtml(displayName + year)}</div>`;
 }
 
-function openProposalModal(proposal) {
-  const modal = document.createElement('div');
-  modal.className = 'proposal-modal';
+function openProposalPage(proposal) {
+  // Hide listing UI
+  const layout = document.querySelector('.layout');
+  layout.style.display = 'none';
 
-  const navList = (state.filteredList.length ? state.filteredList : state.proposalData) || [];
-  let currentIndex = navList.findIndex((item) => item.slug === proposal.slug);
-  if (currentIndex === -1 && state.proposalData.length) {
-    currentIndex = state.proposalData.findIndex((item) => item.slug === proposal.slug);
-  }
+  // Build project page
+  const page = document.createElement('div');
+  page.className = 'project-page';
+  page.dataset.status = proposal.statusClass;
 
-  const backdrop = document.createElement('div');
-  backdrop.className = 'modal-backdrop';
+  const header = document.createElement('header');
+  header.className = 'project-header';
 
-  const content = document.createElement('div');
-  content.className = 'modal-content';
-  content.classList.add(`modal-status-${proposal.statusClass}`);
+  const backBtn = document.createElement('a');
+  backBtn.className = 'project-back';
+  backBtn.href = baseUrl();
+  backBtn.textContent = '← Back';
+  backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeProjectPage(page);
+  });
 
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'modal-close';
-  closeBtn.setAttribute('aria-label', 'Close');
-  closeBtn.textContent = '×';
+  const titleEl = document.createElement('h1');
+  titleEl.className = 'project-title';
+  titleEl.textContent = proposal.title || 'Untitled Proposal';
+
+  const meta = document.createElement('div');
+  meta.className = 'project-meta';
+  const displayName = getDisplayName(proposal);
+  const parts = [];
+  if (displayName) parts.push(escapeHtml(displayName));
+  if (proposal.year) parts.push(escapeHtml(proposal.year));
+  if (proposal.category) parts.push(`<span class="category-badge">${escapeHtml(proposal.category)}</span>`);
+  parts.push(`<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`);
+  meta.innerHTML = parts.join(' · ');
+
+  header.append(backBtn, titleEl, meta);
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,
     showStatusText: false,
     showHeader: false,
   });
+  card.classList.add('project-card');
 
-  const modalBar = document.createElement('div');
-  modalBar.className = 'modal-bar';
+  page.append(header, card, createChatSection(proposal));
+  document.querySelector('.page-wrap').appendChild(page);
 
-  const modalBarLeft = document.createElement('div');
-  modalBarLeft.className = 'modal-bar-left';
-
-  const modalBarCenter = document.createElement('div');
-  modalBarCenter.className = 'modal-bar-center';
-  const modalTitle = document.createElement('h2');
-  modalTitle.textContent = proposal.title || 'Untitled Proposal';
-  const modalCategory = proposal.category ? document.createElement('p') : null;
-  if (modalCategory) {
-    modalCategory.className = 'modal-bar-category';
-    modalCategory.textContent = proposal.category;
-  }
-  const modalArtist = document.createElement('p');
-  modalArtist.className = 'modal-bar-artist';
-  const displayName = getDisplayName(proposal);
-  const year = proposal.year ? `, ${proposal.year}` : '';
-  modalArtist.textContent = displayName ? displayName + year : '';
-  modalBarCenter.appendChild(modalTitle);
-  if (modalCategory) {
-    modalBarCenter.appendChild(modalCategory);
-  }
-  if (displayName) {
-    modalBarCenter.appendChild(modalArtist);
-  }
-
-  const modalBarRight = document.createElement('div');
-  modalBarRight.className = 'modal-bar-right';
-  modalBarRight.appendChild(closeBtn);
-  modalBar.append(modalBarLeft, modalBarCenter, modalBarRight);
-
-  content.appendChild(modalBar);
-  content.appendChild(card);
-  content.appendChild(createChatSection(proposal));
-  modal.append(backdrop, content);
-
-  document.body.appendChild(modal);
-  document.body.style.overflow = 'hidden';
-
+  // Update URL
   state.suppressNavChange = true;
   window.history.pushState(null, '', proposalUrl(proposal.slug));
   setTimeout(() => { state.suppressNavChange = false; }, 0);
   window.scrollTo(0, 0);
 
-  const closeModal = (skipUrlReset = false) => {
-    if (document.body.contains(modal)) {
-      document.body.removeChild(modal);
-    }
-    document.body.style.overflow = '';
-    if (!skipUrlReset) {
-      state.suppressNavChange = true;
-      window.history.pushState(null, '', baseUrl());
-      setTimeout(() => { state.suppressNavChange = false; }, 0);
-    }
-  };
-
-  const navigateTo = (offset) => {
-    if (!navList.length || currentIndex === -1) return;
-    currentIndex = (currentIndex + offset + navList.length) % navList.length;
-    const nextProposal = navList[currentIndex];
-    closeModal(true);
-    openProposalModal(nextProposal);
-  };
-
-  if (navList.length > 1 && currentIndex !== -1) {
-    const pagination = document.createElement('span');
-    pagination.className = 'modal-pagination';
-    pagination.textContent = `${currentIndex + 1} / ${navList.length}`;
-
-    const navRow = document.createElement('div');
-    navRow.className = 'modal-nav-row';
-
-    const prevBtn = document.createElement('button');
-    prevBtn.className = 'modal-nav modal-nav-prev';
-    prevBtn.setAttribute('aria-label', 'Previous proposal');
-    prevBtn.textContent = '‹';
-    prevBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      navigateTo(-1);
-    });
-
-    const nextBtn = document.createElement('button');
-    nextBtn.className = 'modal-nav modal-nav-next';
-    nextBtn.setAttribute('aria-label', 'Next proposal');
-    nextBtn.textContent = '›';
-    nextBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      navigateTo(1);
-    });
-
-    navRow.append(prevBtn, pagination, nextBtn);
-    modalBarLeft.append(navRow);
-  }
-
-  backdrop.addEventListener('click', () => closeModal());
-  closeBtn.addEventListener('click', () => closeModal());
-  modal.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeModal();
-  });
-  modal.addEventListener('click', (event) => {
-    if (!content.contains(event.target) && !event.target.closest('.modal-nav')) {
-      closeModal();
-    }
-  });
-
-  closeBtn.focus();
+  state.currentProjectPage = page;
 }
 
-function resetViewButtons(view) {
-  state.viewMode = view;
-  viewButtons.forEach((btn) => {
-    const isActive = btn.dataset.view === view;
-    btn.classList.toggle('is-active', isActive);
-    btn.setAttribute('aria-pressed', String(isActive));
-  });
-  renderProposals();
+function closeProjectPage(page) {
+  if (page && page.parentNode) {
+    page.remove();
+  }
+  const layout = document.querySelector('.layout');
+  layout.style.display = '';
+  state.currentProjectPage = null;
+
+  state.suppressNavChange = true;
+  window.history.pushState(null, '', baseUrl());
+  setTimeout(() => { state.suppressNavChange = false; }, 0);
 }
 
 function showLoading(isLoading) {
