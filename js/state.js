@@ -12,7 +12,7 @@ export const state = {
   viewMode: 'cards',
   proposalData: [],
   filteredList: [],
-  suppressHashChange: false,
+  suppressNavChange: false,
   searchQuery: '',
 };
 

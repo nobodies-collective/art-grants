@@ -1,6 +1,7 @@
 import { statusFilters, yearFilters, state } from './state.js';
 import { fetchSpreadsheetData, mapRowToProposal } from './data.js';
 import { escapeHtml, formatText, getDisplayName } from './utils.js';
+import { createChatSection } from './chat.js';
 
 let proposalsContainer;
 let loadingEl;
@@ -13,6 +14,23 @@ let searchInput;
 let yearFiltersContainer;
 let isInitialLoad = true;
 let cardElements = new Map();
+
+// Detect base path so /repo-name/proposal/slug works on GitHub Pages
+const BASE_PATH = window.location.pathname.replace(/\/proposal\/.*$/, '').replace(/\/+$/, '');
+
+function getSlugFromPath() {
+  const path = window.location.pathname;
+  const match = path.match(/\/proposal\/([^/]+)\/?$/);
+  return match ? match[1] : null;
+}
+
+function proposalUrl(slug) {
+  return `${BASE_PATH}/proposal/${slug}`;
+}
+
+function baseUrl() {
+  return BASE_PATH || '/';
+}
 
 export function initUI() {
   proposalsContainer = document.getElementById('proposals-list');
@@ -66,14 +84,12 @@ function attachEventListeners() {
     });
   }
 
-  window.addEventListener('hashchange', () => {
-    if (state.suppressHashChange) return;
-    const hash = window.location.hash.slice(1);
-    if (hash) {
-      const proposal = state.proposalData.find((item) => item.slug === hash);
-      if (proposal) {
-        openProposalModal(proposal);
-      }
+  window.addEventListener('popstate', () => {
+    if (state.suppressNavChange) return;
+    const slug = getSlugFromPath();
+    if (slug) {
+      const proposal = state.proposalData.find((item) => item.slug === slug);
+      if (proposal) openProposalModal(proposal);
     }
   });
 }
@@ -142,9 +158,9 @@ async function loadData() {
     applyFiltersAndRender();
     // Loading will be hidden when cards are ready (handled in renderProposals)
 
-    if (window.location.hash) {
-      const hash = window.location.hash.slice(1);
-      const initialProposal = state.proposalData.find((item) => item.slug === hash);
+    const initialSlug = getSlugFromPath();
+    if (initialSlug) {
+      const initialProposal = state.proposalData.find((item) => item.slug === initialSlug);
       if (initialProposal) {
         openProposalModal(initialProposal);
       }
@@ -602,29 +618,26 @@ function openProposalModal(proposal) {
 
   content.appendChild(modalBar);
   content.appendChild(card);
+  content.appendChild(createChatSection(proposal));
   modal.append(backdrop, content);
 
   document.body.appendChild(modal);
   document.body.style.overflow = 'hidden';
 
-  state.suppressHashChange = true;
-  window.location.hash = proposal.slug;
-  setTimeout(() => {
-    state.suppressHashChange = false;
-  }, 0);
+  state.suppressNavChange = true;
+  window.history.pushState(null, '', proposalUrl(proposal.slug));
+  setTimeout(() => { state.suppressNavChange = false; }, 0);
   window.scrollTo(0, 0);
 
-  const closeModal = (skipHashReset = false) => {
+  const closeModal = (skipUrlReset = false) => {
     if (document.body.contains(modal)) {
       document.body.removeChild(modal);
     }
     document.body.style.overflow = '';
-    if (!skipHashReset && window.location.hash === `#${proposal.slug}`) {
-      state.suppressHashChange = true;
-      window.history.replaceState(null, '', window.location.pathname);
-      setTimeout(() => {
-        state.suppressHashChange = false;
-      }, 0);
+    if (!skipUrlReset) {
+      state.suppressNavChange = true;
+      window.history.pushState(null, '', baseUrl());
+      setTimeout(() => { state.suppressNavChange = false; }, 0);
     }
   };
 
