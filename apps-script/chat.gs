@@ -5,32 +5,26 @@
  * 1. Open your chat spreadsheet in Google Sheets
  * 2. Go to Extensions → Apps Script
  * 3. Paste this entire file into Code.gs
- * 4. Replace SPREADSHEET_ID below with your spreadsheet's actual ID
- *    (from the URL: https://docs.google.com/spreadsheets/d/THIS_PART/edit)
- * 5. Click Deploy → New deployment
+ * 4. Click Deploy → New deployment
  *    - Type: Web app
  *    - Execute as: Me
  *    - Who has access: Anyone
- * 6. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
+ * 5. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
  * PASSPHRASE SETUP:
- * Two sources of passphrases:
+ * Create a tab called "_codes" with two columns:
+ *   Column A: Project slug (or * for admin)
+ *   Column B: Passphrase
  *
- * 1. ADMIN passphrase — in the chat spreadsheet, create a tab "_codes":
- *      Column A: *
- *      Column B: your-admin-secret
- *    This works on ALL projects. Messages are tagged "admin".
+ * Example:
+ *   *                          | admin-secret     ← works on all projects, tagged "admin"
+ *   light-installation-2026    | sun42            ← works on this project only, tagged "member"
  *
- * 2. PER-PROJECT passphrase — in the proposals spreadsheet, add a
- *    column called "Passphrase". Each row's passphrase lets that
- *    project's participants post. Messages are tagged "member".
- *
- * NOTE: Each time you update this script, create a NEW deployment
+ * NOTE: Each time you update this script, deploy a NEW version
  * (Deploy → Manage deployments → Edit → New version)
  */
 
-var CHAT_SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
-var PROPOSALS_SPREADSHEET_ID = '1rlp7MPswcL8zYdwG11QKOUUakxjxWW4DU0mDvj8r5rs';
+var SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
 
 function doPost(e) {
   try {
@@ -41,16 +35,15 @@ function doPost(e) {
     var message = (data.message || '').trim();
 
     if (!project || !author || !message) {
-      return jsonResponse({ error: 'Missing required fields: project, author, message' });
+      return jsonResponse({ error: 'Missing required fields' });
     }
 
     if (!code) {
       return jsonResponse({ error: 'Passphrase is required' });
     }
 
-    var ss = SpreadsheetApp.openById(CHAT_SPREADSHEET_ID);
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    // Verify passphrase and detect role
     var role = verifyCode(ss, project, code);
     if (!role) {
       return jsonResponse({ error: 'Invalid passphrase' });
@@ -72,56 +65,20 @@ function doPost(e) {
   }
 }
 
-function verifyCode(chatSS, project, code) {
-  // 1. Check admin passphrase from _codes tab in chat spreadsheet
-  var codesTab = chatSS.getSheetByName('_codes');
-  if (codesTab) {
-    var codes = codesTab.getDataRange().getValues();
-    for (var i = 0; i < codes.length; i++) {
-      var slug = (codes[i][0] || '').toString().trim();
-      var passphrase = (codes[i][1] || '').toString().trim();
-      if (passphrase === code && slug === '*') return 'admin';
+function verifyCode(ss, project, code) {
+  var codesTab = ss.getSheetByName('_codes');
+  if (!codesTab) return false;
+
+  var data = codesTab.getDataRange().getValues();
+  for (var i = 0; i < data.length; i++) {
+    var slug = (data[i][0] || '').toString().trim();
+    var passphrase = (data[i][1] || '').toString().trim();
+    if (passphrase === code) {
+      if (slug === '*') return 'admin';
+      if (slug === project) return 'member';
     }
   }
-
-  // 2. Check per-project passphrase from proposals spreadsheet
-  try {
-    var proposalsSS = SpreadsheetApp.openById(PROPOSALS_SPREADSHEET_ID);
-    var sheet = proposalsSS.getSheets()[0]; // First sheet (form responses)
-    var data = sheet.getDataRange().getValues();
-    var headers = data[0];
-
-    // Find Title and Passphrase columns (case-insensitive)
-    var titleCol = -1;
-    var codeCol = -1;
-    for (var c = 0; c < headers.length; c++) {
-      var h = (headers[c] || '').toString().toLowerCase().trim();
-      if (h === 'title') titleCol = c;
-      if (h === 'passphrase' || h === 'code' || h === 'pass') codeCol = c;
-    }
-
-    if (titleCol >= 0 && codeCol >= 0) {
-      for (var r = 1; r < data.length; r++) {
-        var title = (data[r][titleCol] || '').toString().trim();
-        var rowSlug = generateSlug(title);
-        var rowCode = (data[r][codeCol] || '').toString().trim();
-        if (rowSlug === project && rowCode === code) return 'member';
-      }
-    }
-  } catch (err) {
-    // If proposals sheet is inaccessible, skip
-  }
-
   return false;
-}
-
-function generateSlug(title) {
-  return (title || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
 }
 
 function doGet(e) {
@@ -131,7 +88,7 @@ function doGet(e) {
       return jsonResponse({ error: 'Missing project parameter' });
     }
 
-    var ss = SpreadsheetApp.openById(CHAT_SPREADSHEET_ID);
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var tab = ss.getSheetByName(project);
 
     if (!tab || tab.getLastRow() < 2) {
