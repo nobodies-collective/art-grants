@@ -158,7 +158,8 @@ function buildYearFilters() {
 async function loadData() {
   try {
     showLoading(true);
-    const { headers, rows } = await fetchSpreadsheetData();
+    const { prefetch } = await import('./main.js');
+    const { headers, rows } = await fetchSpreadsheetData(prefetch);
     if (!rows.length) {
       showError('No proposals available.');
       showLoading(false);
@@ -505,9 +506,9 @@ function createProposalCard(
     : '';
 
   card.innerHTML = `
+        ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">` : ''}
         ${headerHTML}
         <div class="card-body">
-            ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">` : ''}
             <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
             ${detailsHTML}
         </div>
@@ -592,15 +593,6 @@ function openProposalPage(proposal) {
   const header = document.createElement('header');
   header.className = 'project-header';
 
-  const backBtn = document.createElement('a');
-  backBtn.className = 'project-back';
-  backBtn.href = baseUrl();
-  backBtn.textContent = '← Back';
-  backBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    closeProjectPage(page);
-  });
-
   const titleEl = document.createElement('h1');
   titleEl.className = 'project-title';
   titleEl.textContent = proposal.title || 'Untitled Proposal';
@@ -615,7 +607,7 @@ function openProposalPage(proposal) {
   parts.push(`<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`);
   meta.innerHTML = parts.join(' · ');
 
-  header.append(backBtn, titleEl, meta);
+  header.append(titleEl, meta);
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,
@@ -624,7 +616,10 @@ function openProposalPage(proposal) {
   });
   card.classList.add('project-card');
 
-  page.append(header, card, createChatSection(proposal));
+  const body = document.createElement('div');
+  body.className = 'project-body';
+  body.append(card, createChatSection(proposal));
+  page.append(header, body);
   document.querySelector('.page-wrap').appendChild(page);
 
   // Update URL

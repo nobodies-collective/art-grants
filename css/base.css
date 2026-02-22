@@ -9,6 +9,7 @@
   --border: #d7d7d7;
   --accent: #d7d7d7;
   --space: 1rem;
+  --font-size: 14px;
 }
 
 * {
@@ -17,20 +18,19 @@
   box-sizing: border-box;
 }
 
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
 body {
   font-family: "Atkinson Hyperlegible Next", system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 13px;
+  font-size: var(--font-size);
   line-height: 1.5;
   letter-spacing: 0.01em;
   padding: var(--space);
-}
-
-@media (max-width: 600px) {
-  body {
-    font-size: 12px;
-  }
 }
 
 .visually-hidden {

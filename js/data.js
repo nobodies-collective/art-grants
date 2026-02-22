@@ -1,12 +1,48 @@
 import { CSV_URL, PLACEHOLDER_IMAGE_BASE } from './constants.js';
 import { parseCSV, findColumn, generateSlug } from './utils.js';
 
-export async function fetchSpreadsheetData() {
-  const response = await fetch(CSV_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+const CACHE_KEY = 'art-grants-csv';
+const CACHE_TS_KEY = 'art-grants-csv-ts';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+export async function fetchSpreadsheetData(prefetchPromise) {
+  // Try cache first for instant render
+  const cached = localStorage.getItem(CACHE_KEY);
+  const cachedTs = Number(localStorage.getItem(CACHE_TS_KEY) || 0);
+  const cacheValid = cached && (Date.now() - cachedTs < CACHE_TTL);
+
+  let csvText;
+
+  if (cacheValid) {
+    // Use cache immediately, refresh in background
+    csvText = cached;
+    (prefetchPromise || fetch(CSV_URL).then(r => r.ok ? r.text() : null))
+      .then(text => {
+        if (text) {
+          localStorage.setItem(CACHE_KEY, text);
+          localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+        }
+      })
+      .catch(() => {});
+  } else {
+    // No valid cache — await the prefetched or fresh request
+    try {
+      csvText = await (prefetchPromise || fetch(CSV_URL).then(r => {
+        if (!r.ok) throw new Error(`Failed to fetch data: ${r.status} ${r.statusText}`);
+        return r.text();
+      }));
+      localStorage.setItem(CACHE_KEY, csvText);
+      localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+    } catch (e) {
+      // If network fails but we have stale cache, use it
+      if (cached) {
+        csvText = cached;
+      } else {
+        throw e;
+      }
+    }
   }
-  const csvText = await response.text();
+
   return parseCSV(csvText);
 }
 
@@ -27,7 +63,7 @@ export function mapRowToProposal(row, headers, index = null) {
   // Create unique key: always include index to ensure uniqueness even for duplicates
   const yearStr = (year || '').trim();
   const uniqueKey = yearStr ? `${slug}-${yearStr}-${index}` : (index !== null ? `${slug}-${index}` : `${slug}-${Math.random().toString(36).substr(2, 9)}`);
-  
+
   return {
     title,
     titleLower: title.toLowerCase(),
@@ -63,8 +99,8 @@ function formatStatusClass(status) {
   if (!status) return 'under-review';
   const normalized = status.toLowerCase().trim().replace(/\s+/g, ' ');
   // Check for self-funded first (before regular funded)
-  if ((normalized.includes('self') && normalized.includes('funded')) || 
-      normalized === 'self-funded' || 
+  if ((normalized.includes('self') && normalized.includes('funded')) ||
+      normalized === 'self-funded' ||
       normalized === 'self funded' ||
       (normalized.includes('art') && normalized.includes('no') && normalized.includes('grant'))) {
     return 'self-funded';
@@ -79,8 +115,8 @@ function formatStatusLabel(status) {
   if (!status) return 'Under Review';
   const normalized = status.toLowerCase().trim().replace(/\s+/g, ' ');
   // Check for self-funded first (before regular funded)
-  if ((normalized.includes('self') && normalized.includes('funded')) || 
-      normalized === 'self-funded' || 
+  if ((normalized.includes('self') && normalized.includes('funded')) ||
+      normalized === 'self-funded' ||
       normalized === 'self funded' ||
       (normalized.includes('art') && normalized.includes('no') && normalized.includes('grant'))) {
     return 'Self-funded';
@@ -90,6 +126,3 @@ function formatStatusLabel(status) {
   if (normalized.includes('review') || normalized.includes('under')) return 'Under Review';
   return 'Under Review';
 }
-
-
-

@@ -6,10 +6,10 @@
 }
 
 .chat-heading {
-  font-size: 12px;
+  font-size: var(--font-size);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 0.75rem;
   color: var(--text);
 }
@@ -26,14 +26,14 @@
 
 .chat-loading,
 .chat-empty {
-  font-size: 12px;
+  font-size: var(--font-size);
   color: var(--text);
   opacity: 0.5;
   padding: 0.5rem 0;
 }
 
 .chat-error {
-  font-size: 12px;
+  font-size: var(--font-size);
   color: #d50000;
   padding: 0.25rem 0;
 }
@@ -54,14 +54,14 @@
 }
 
 .chat-message-author {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size);
+  font-weight: 400;
   color: var(--text);
 }
 
 .chat-message-role {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--font-size);
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding: 0.1rem 0.35rem;
@@ -71,14 +71,14 @@
 }
 
 .chat-message-time {
-  font-size: 11px;
+  font-size: var(--font-size);
   color: var(--text);
   opacity: 0.5;
   margin-left: auto;
 }
 
 .chat-message-body {
-  font-size: 13px;
+  font-size: var(--font-size);
   line-height: 1.45;
   color: var(--text);
   white-space: pre-wrap;
@@ -95,7 +95,7 @@
 
 .chat-input {
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--font-size);
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -137,8 +137,8 @@
 
 .chat-send {
   font-family: inherit;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--font-size);
+  font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   padding: 0.45rem 0.75rem;

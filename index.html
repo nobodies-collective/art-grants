@@ -65,7 +65,7 @@
           </section>
           <section
             class="controls"
-            aria-label="Filters and sorting">
+            aria-label="Filters, sort and search">
             <div
               class="status-filters"
               role="group"
@@ -105,45 +105,43 @@
               aria-label="Filter by year"
               id="year-filters-container">
             </div>
-            <div class="controls-right">
-              <div class="sort-control">
-                <label for="sort-select">Sort</label>
-                <select id="sort-select">
-                  <option value="">Default order</option>
-                  <option value="title-asc">Title A → Z</option>
-                  <option value="title-desc">Title Z → A</option>
-                  <option value="year-asc">Year ↑</option>
-                  <option value="year-desc">Year ↓</option>
-                  <option value="category">Category</option>
-                  <option value="status">Status</option>
-                </select>
-              </div>
-              <div
-                class="view-toggle"
-                role="group"
-                aria-label="View mode">
-                <button
-                  type="button"
-                  class="view-button is-active"
-                  data-view="cards"
-                  aria-pressed="true">
-                  Cards
-                </button>
-                <button
-                  type="button"
-                  class="view-button"
-                  data-view="table"
-                  aria-pressed="false">
-                  Table
-                </button>
-              </div>
+            <div
+              class="view-toggle"
+              role="group"
+              aria-label="View mode">
+              <button
+                type="button"
+                class="view-button is-active"
+                data-view="cards"
+                aria-pressed="true">
+                Cards
+              </button>
+              <button
+                type="button"
+                class="view-button"
+                data-view="table"
+                aria-pressed="false">
+                Table
+              </button>
+            </div>
+            <div class="sort-control">
+              <label for="sort-select">Sort</label>
+              <select id="sort-select">
+                <option value="">Default order</option>
+                <option value="title-asc">Title A → Z</option>
+                <option value="title-desc">Title Z → A</option>
+                <option value="year-asc">Year ↑</option>
+                <option value="year-desc">Year ↓</option>
+                <option value="category">Category</option>
+                <option value="status">Status</option>
+              </select>
             </div>
             <div class="search-control">
               <label for="search-input">Search</label>
               <input
                 type="text"
                 id="search-input"
-                placeholder="Search by artist, title, or description..."
+                placeholder="Search..."
                 aria-label="Search proposals" />
             </div>
           </section>
