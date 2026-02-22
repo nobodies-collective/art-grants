@@ -26,7 +26,7 @@
  * (Deploy → Manage deployments → Edit → New version)
  */
 
-var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+var SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
 
 function doPost(e) {
   try {
