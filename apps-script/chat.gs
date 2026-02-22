@@ -19,6 +19,9 @@
  *   Column B: Passphrase (e.g. "sun42")
  * Only people who know the passphrase can post messages.
  *
+ * Use slug "*" for an admin passphrase that works on all projects:
+ *   *  |  admin-secret-phrase
+ *
  * NOTE: Each time you update this script, create a NEW deployment
  * (Deploy → Manage deployments → Edit → New version)
  */
@@ -43,8 +46,9 @@ function doPost(e) {
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    // Verify passphrase
-    if (!verifyCode(ss, project, code)) {
+    // Verify passphrase and detect role
+    var role = verifyCode(ss, project, code);
+    if (!role) {
       return jsonResponse({ error: 'Invalid passphrase' });
     }
 
@@ -56,7 +60,7 @@ function doPost(e) {
       tab.setFrozenRows(1);
     }
 
-    tab.appendRow([new Date(), author, '', message]);
+    tab.appendRow([new Date(), author, role, message]);
 
     return jsonResponse({ ok: true });
   } catch (err) {
@@ -72,8 +76,9 @@ function verifyCode(ss, project, code) {
   for (var i = 0; i < data.length; i++) {
     var slug = (data[i][0] || '').toString().trim();
     var passphrase = (data[i][1] || '').toString().trim();
-    if (slug === project && passphrase === code) {
-      return true;
+    if (passphrase === code) {
+      if (slug === '*') return 'admin';
+      if (slug === project) return 'member';
     }
   }
   return false;
