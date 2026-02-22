@@ -1,94 +1,33 @@
-import { CHAT_SPREADSHEET_ID, CHAT_SCRIPT_URL } from './constants.js';
+import { CHAT_SCRIPT_URL } from './constants.js';
 import { escapeHtml } from './utils.js';
 
-const CHAT_CSV_BASE = `https://docs.google.com/spreadsheets/d/e/${CHAT_SPREADSHEET_ID}/pub?output=csv`;
-
-// Cache fetched tab list so we only request it once per session
-let knownTabs = null;
-
-async function fetchTabList() {
-  if (knownTabs) return knownTabs;
-  const url = `https://docs.google.com/spreadsheets/d/e/${CHAT_SPREADSHEET_ID}/pubhtml`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return {};
-    const html = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const links = doc.querySelectorAll('#sheet-menu li a');
-    const tabs = {};
-    links.forEach((a) => {
-      const name = a.textContent.trim();
-      const href = a.getAttribute('href') || '';
-      const match = href.match(/gid=(\d+)/);
-      if (match) tabs[name] = match[1];
-    });
-    knownTabs = tabs;
-    return tabs;
-  } catch {
-    return {};
-  }
-}
-
 async function fetchChatMessages(slug) {
+  if (!CHAT_SCRIPT_URL) return [];
   try {
-    const tabs = await fetchTabList();
-    const gid = tabs[slug];
-    if (!gid) return [];
-
-    const csvUrl = `${CHAT_CSV_BASE}&gid=${gid}`;
-    const res = await fetch(csvUrl);
+    const params = new URLSearchParams({ project: slug });
+    const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
     if (!res.ok) return [];
-    const text = await res.text();
-    return parseChatCSV(text);
+    const data = await res.json();
+    if (data.error) return [];
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
-}
-
-function parseChatCSV(text) {
-  if (!text || !text.trim()) return [];
-  const lines = [];
-  let row = [];
-  let field = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    const next = text[i + 1];
-    if (c === '"') {
-      if (inQuotes && next === '"') { field += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (c === ',' && !inQuotes) {
-      row.push(field.trim()); field = '';
-    } else if ((c === '\n' || c === '\r') && !inQuotes) {
-      if (c === '\r' && next === '\n') i++;
-      row.push(field.trim());
-      if (row.some(cell => cell)) lines.push(row);
-      row = []; field = '';
-    } else {
-      field += c;
-    }
-  }
-  if (field || row.length) { row.push(field.trim()); if (row.some(c => c)) lines.push(row); }
-  if (lines.length < 2) return [];
-
-  return lines.slice(1).map(r => ({
-    timestamp: r[0] || '',
-    author: r[1] || '',
-    role: r[2] || '',
-    message: r[3] || '',
-  }));
 }
 
 async function postChatMessage(slug, code, message) {
   if (!CHAT_SCRIPT_URL) {
     throw new Error('Chat posting is not configured. Set CHAT_SCRIPT_URL in constants.js.');
   }
-  const res = await fetch(CHAT_SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ project: slug, code, message }),
+  // Use GET with action=post so the redirect from Apps Script works
+  // (POST + cross-origin redirect is blocked by browsers)
+  const params = new URLSearchParams({
+    action: 'post',
+    project: slug,
+    code,
+    message,
   });
+  const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
   if (!res.ok) throw new Error('Failed to post message');
   const data = await res.json();
   if (data.error) throw new Error(data.error);
@@ -137,9 +76,11 @@ export function createChatSection(proposal) {
     const form = document.createElement('form');
     form.className = 'chat-form';
     form.innerHTML = `
-      <input type="text" name="code" class="chat-input chat-code" placeholder="Passphrase" required />
+      <label for="chat-code-${proposal.slug}" class="visually-hidden">Passphrase</label>
+      <input type="text" id="chat-code-${proposal.slug}" name="code" class="chat-input chat-code" placeholder="Passphrase" required autocomplete="off" />
       <div class="chat-compose">
-        <textarea name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
+        <label for="chat-msg-${proposal.slug}" class="visually-hidden">Message</label>
+        <textarea id="chat-msg-${proposal.slug}" name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
         <button type="submit" class="chat-send">Send</button>
       </div>
     `;
@@ -164,7 +105,6 @@ export function createChatSection(proposal) {
         await postChatMessage(proposal.slug, code, message);
         messageInput.value = '';
         // Refresh messages
-        knownTabs = null;
         const messages = await fetchChatMessages(proposal.slug);
         messagesEl.innerHTML = '';
         if (!messages.length) {

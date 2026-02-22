@@ -57,6 +57,11 @@
   cursor: pointer;
 }
 
+.proposal-card.card-clickable:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
 .proposal-card header {
   margin-bottom: 0.75rem;
 }
@@ -159,7 +164,7 @@
   border-radius: 2px;
 }
 
-.proposal-card main {
+.proposal-card .card-body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;

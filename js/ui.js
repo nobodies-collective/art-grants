@@ -321,6 +321,9 @@ function renderProposals() {
     state.proposalData.forEach((proposal) => {
       const card = createProposalCard(proposal);
       card.classList.add('card-clickable');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('role', 'link');
+      card.setAttribute('aria-label', proposal.title);
       card.dataset.slug = proposal.slug;
       card.dataset.uniqueKey = proposal.uniqueKey;
       if (isInitialLoad) {
@@ -329,6 +332,12 @@ function renderProposals() {
         card.classList.add('no-animation');
       }
       card.addEventListener('click', () => openProposalPage(proposal));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openProposalPage(proposal);
+        }
+      });
       proposalsContainer.appendChild(card);
       cardElements.set(proposal.uniqueKey, card);
     });
@@ -479,7 +488,7 @@ function createProposalCard(
     : '';
 
   const authorMarkup = !showAllDetails && showHeader ? formatAuthor(proposal) : '';
-  const categoryHTML = proposal.category ? `<span class="category-badge">${escapeHtml(proposal.category)}</span>` : '';
+  const categoryHTML = showAllDetails && proposal.category ? `<span class="category-badge">${escapeHtml(proposal.category)}</span>` : '';
   const headerHTML = showHeader
     ? `
         <header>
@@ -497,11 +506,11 @@ function createProposalCard(
 
   card.innerHTML = `
         ${headerHTML}
-        <main>
-            ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy">` : ''}
+        <div class="card-body">
+            ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">` : ''}
             <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
             ${detailsHTML}
-        </main>
+        </div>
         ${cardStatusHTML}
     `;
 

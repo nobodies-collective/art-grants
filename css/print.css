@@ -14,11 +14,9 @@
   .controls,
   .view-toggle,
   .intro,
-  .header-actions,
-  .modal-nav,
-  .modal-close,
   .spinner,
-  .error {
+  .error,
+  .chat-section {
     display: none !important;
   }
 
@@ -45,8 +43,7 @@
   }
 
   .card-status,
-  .status,
-  .permalink-btn {
+  .status {
     display: none !important;
   }
 

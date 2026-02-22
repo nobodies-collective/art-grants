@@ -11,8 +11,7 @@
  *    - Who has access: Anyone
  * 5. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
- * PASSPHRASE SETUP:
- * Create a tab called "_codes" with three columns:
+ * _codes tab layout (columns A–C):
  *   Column A: Project slug (or * for admin)
  *   Column B: Passphrase
  *   Column C: Display name (shown as message author)
@@ -25,13 +24,20 @@
  * (Deploy → Manage deployments → Edit → New version)
  */
 
-var SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
+// If the script is container-bound (created via Extensions > Apps Script),
+// getActiveSpreadsheet() returns the parent sheet automatically.
+// Set an ID here only if running as a standalone script.
+var SPREADSHEET_ID = null;
+
+function getSpreadsheet() {
+  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var project = (data.project || '').trim();
-    var author = (data.author || '').trim();
     var code = (data.code || '').trim();
     var message = (data.message || '').trim();
 
@@ -43,7 +49,7 @@ function doPost(e) {
       return jsonResponse({ error: 'Passphrase is required' });
     }
 
-    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var ss = getSpreadsheet();
 
     var auth = verifyCode(ss, project, code);
     if (!auth) {
@@ -76,8 +82,8 @@ function verifyCode(ss, project, code) {
     var passphrase = (data[i][1] || '').toString().trim();
     var name = (data[i][2] || '').toString().trim();
     if (passphrase === code) {
-      if (slug === '*') return { role: 'admin', name: name || 'Admin' };
-      if (slug === project) return { role: 'member', name: name || 'Member' };
+      if (slug === '*') return { role: '', name: name || 'Art Grants Committee' };
+      if (slug === project) return { role: '', name: name || 'Artist' };
     }
   }
   return false;
@@ -85,12 +91,45 @@ function verifyCode(ss, project, code) {
 
 function doGet(e) {
   try {
+    var action = (e.parameter.action || '').trim();
+
+    // Handle posting via GET (browsers block cross-origin POST redirects)
+    if (action === 'post') {
+      var project = (e.parameter.project || '').trim();
+      var code = (e.parameter.code || '').trim();
+      var message = (e.parameter.message || '').trim();
+
+      if (!project || !message) {
+        return jsonResponse({ error: 'Missing required fields' });
+      }
+      if (!code) {
+        return jsonResponse({ error: 'Passphrase is required' });
+      }
+
+      var ss = getSpreadsheet();
+      var auth = verifyCode(ss, project, code);
+      if (!auth) {
+        return jsonResponse({ error: 'Invalid passphrase' });
+      }
+
+      var tab = ss.getSheetByName(project);
+      if (!tab) {
+        tab = ss.insertSheet(project);
+        tab.appendRow(['Timestamp', 'Author', 'Role', 'Message']);
+        tab.setFrozenRows(1);
+      }
+
+      tab.appendRow([new Date(), auth.name, auth.role, message]);
+      return jsonResponse({ ok: true });
+    }
+
+    // Default: fetch messages
     var project = (e.parameter.project || '').trim();
     if (!project) {
       return jsonResponse({ error: 'Missing project parameter' });
     }
 
-    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var ss = getSpreadsheet();
     var tab = ss.getSheetByName(project);
 
     if (!tab || tab.getLastRow() < 2) {

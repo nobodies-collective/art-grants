@@ -6,6 +6,18 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0" />
     <title>Art Grants</title>
+    <meta name="description" content="Browse and submit art grant proposals. A platform for artists to share project ideas and track funding status." />
+    <meta property="og:title" content="Art Grants" />
+    <meta property="og:description" content="Browse and submit art grant proposals." />
+    <meta property="og:type" content="website" />
+    <script>
+      // Set base href so relative asset paths work on deep SPA routes
+      var base = document.createElement('base');
+      base.href = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '/');
+      document.head.appendChild(base);
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="css/main.css" />
@@ -22,7 +34,7 @@
               This platform displays art grant proposals. Proposals are submitted through a form and added to a spreadsheet,
               which populates this site. Browse proposals or
               <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSeaQyd21DJEvOAyzrfXpKvn1rVGmH_IpoGedWLQolEoZ-zIIQ/viewform?usp=header"
+                href="https://forms.gle/6Y87sJD39zWE7a1q8"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="inline-link"
@@ -137,19 +149,22 @@
           </section>
         </aside>
 
-        <section class="content">
+        <main class="content" aria-label="Proposals">
           <div
             id="loading"
-            class="loading">
-            <div class="spinner"></div>
+            class="loading"
+            role="status"
+            aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
             <p>Loading proposals...</p>
           </div>
           <div
             id="error"
             class="error"
+            role="alert"
             style="display: none"></div>
           <div id="proposals-list"></div>
-        </section>
+        </main>
       </div>
     </div>
     <script>

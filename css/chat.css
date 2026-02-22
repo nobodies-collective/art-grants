@@ -106,6 +106,8 @@
 
 .chat-input:focus {
   border-color: var(--text);
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
 }
 
 .chat-form-row {

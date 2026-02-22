@@ -1,0 +1,9 @@
+RewriteEngine On
+RewriteBase /org/nobodies-collective/art-grants/
+
+# Don't rewrite existing files or directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# Only rewrite SPA routes (year/slug patterns), not asset requests
+RewriteCond %{REQUEST_URI} !\.(?:js|css|png|jpg|jpeg|gif|svg|ico|woff2?|ttf|eot|map)$ [NC]
+RewriteRule . index.html [L]
