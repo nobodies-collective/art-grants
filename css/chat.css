@@ -129,6 +129,11 @@
   gap: 0.4rem;
 }
 
+.chat-bottom {
+  display: flex;
+  gap: 0.4rem;
+}
+
 .chat-textarea {
   flex: 1;
   resize: vertical;

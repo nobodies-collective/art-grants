@@ -69,17 +69,13 @@ h1 {
 }
 
 .intro {
-  padding: 0.9rem;
-  background: var(--card-bg);
-  border-radius: 2px;
   max-width: 50vw;
 }
 
 .intro-label {
-  font-size: var(--font-size);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.5rem;
 }
 
 .intro p {
@@ -115,26 +111,22 @@ h1 {
 }
 
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
   gap: 0.5rem;
+  font-size: var(--font-size-small);
 }
 
 .status-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: contents;
 }
 
 .year-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: contents;
 }
 
 .search-control {
-  width: 100%;
+  grid-column: 1 / -1;
 }
 
 .search-control label {
@@ -160,11 +152,9 @@ h1 {
 .status-chip {
   border: 1px solid var(--border);
   background: transparent;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
-  padding: 0.35rem 0.65rem;
-  font-size: var(--font-size);
-  font-weight: 400;
+  padding: 0.25rem 0.5rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   transition: background 0.1s ease, color 0.1s ease;
@@ -188,11 +178,9 @@ h1 {
 .year-chip {
   border: 1px solid var(--border);
   background: transparent;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
-  padding: 0.35rem 0.65rem;
-  font-size: var(--font-size);
-  font-weight: 400;
+  padding: 0.25rem 0.5rem;
   letter-spacing: 0.02em;
   transition: background 0.1s ease, color 0.1s ease;
   border-radius: 6px;
@@ -248,7 +236,12 @@ h1 {
     font-size: 1.5rem;
   }
 
+  .intro {
+    max-width: 100%;
+  }
+
   .controls {
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.35rem;
   }
 

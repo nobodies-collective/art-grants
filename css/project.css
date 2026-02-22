@@ -36,6 +36,10 @@
   align-items: start;
 }
 
+.project-body:not(:has(.chat-section)) {
+  grid-template-columns: 1fr;
+}
+
 .project-card {
   border: 1px solid var(--border);
   border-radius: 2px;

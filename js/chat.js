@@ -73,14 +73,18 @@ export function createChatSection(proposal) {
   });
 
   if (CHAT_SCRIPT_URL && proposal.statusKey === 'under-review') {
+    const savedCode = localStorage.getItem('chat-code-' + proposal.slug) || '';
+
     const form = document.createElement('form');
     form.className = 'chat-form';
     form.innerHTML = `
-      <label for="chat-code-${proposal.slug}" class="visually-hidden">Passphrase</label>
-      <input type="text" id="chat-code-${proposal.slug}" name="code" class="chat-input chat-code" placeholder="Passphrase" required autocomplete="off" />
       <div class="chat-compose">
         <label for="chat-msg-${proposal.slug}" class="visually-hidden">Message</label>
         <textarea id="chat-msg-${proposal.slug}" name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
+      </div>
+      <div class="chat-bottom">
+        <label for="chat-code-${proposal.slug}" class="visually-hidden">Passphrase</label>
+        <input type="text" id="chat-code-${proposal.slug}" name="code" class="chat-input chat-code" placeholder="Passphrase" required value="${escapeHtml(savedCode)}" />
         <button type="submit" class="chat-send">Send</button>
       </div>
     `;
@@ -103,6 +107,7 @@ export function createChatSection(proposal) {
       btn.textContent = 'Sending...';
       try {
         await postChatMessage(proposal.slug, code, message);
+        localStorage.setItem('chat-code-' + proposal.slug, code);
         messageInput.value = '';
         // Refresh messages
         const messages = await fetchChatMessages(proposal.slug);

@@ -70,7 +70,6 @@ function attachEventListeners() {
   }
 
   window.addEventListener('popstate', () => {
-    if (state.suppressNavChange) return;
     const info = getProposalFromPath();
     if (info) {
       if (state.currentProjectPage) {
@@ -80,7 +79,7 @@ function attachEventListeners() {
       const proposal = state.proposalData.find(
         (item) => item.slug === info.slug && (item.year || 'unknown') === info.year
       );
-      if (proposal) openProposalPage(proposal);
+      if (proposal) openProposalPage(proposal, { skipPushState: true });
     } else {
       if (state.currentProjectPage) {
         state.currentProjectPage.remove();
@@ -574,7 +573,7 @@ function formatAuthor(proposal) {
   return `<div class="author">${escapeHtml(displayName + year)}</div>`;
 }
 
-function openProposalPage(proposal) {
+function openProposalPage(proposal, { skipPushState = false } = {}) {
   // Hide listing UI
   const layout = document.querySelector('.layout');
   layout.style.display = 'none';
@@ -612,14 +611,17 @@ function openProposalPage(proposal) {
 
   const body = document.createElement('div');
   body.className = 'project-body';
-  body.append(card, createChatSection(proposal));
+  body.appendChild(card);
+  if (proposal.statusKey === 'under-review') {
+    body.appendChild(createChatSection(proposal));
+  }
   page.append(header, body);
   document.querySelector('.page-wrap').appendChild(page);
 
-  // Update URL
-  state.suppressNavChange = true;
-  window.history.pushState(null, '', proposalUrl(proposal));
-  setTimeout(() => { state.suppressNavChange = false; }, 0);
+  // Update URL only when navigating forward (not on popstate)
+  if (!skipPushState) {
+    window.history.pushState(null, '', proposalUrl(proposal));
+  }
   window.scrollTo(0, 0);
 
   state.currentProjectPage = page;
@@ -633,9 +635,7 @@ function closeProjectPage(page) {
   layout.style.display = '';
   state.currentProjectPage = null;
 
-  state.suppressNavChange = true;
   window.history.pushState(null, '', baseUrl());
-  setTimeout(() => { state.suppressNavChange = false; }, 0);
 }
 
 function showLoading(isLoading) {

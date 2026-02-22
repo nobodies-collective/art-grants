@@ -12,7 +12,6 @@ export const state = {
   viewMode: 'cards',
   proposalData: [],
   filteredList: [],
-  suppressNavChange: false,
   searchQuery: '',
   currentProjectPage: null,
 };
