@@ -15,10 +15,34 @@
   border-top-width: 3px;
   padding: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   border-radius: 2px;
   position: relative;
   overflow: hidden;
+}
+
+.card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.card-thumb {
+  width: 140px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-thumb .cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .proposal-card.fade-in-on-load {
@@ -168,8 +192,8 @@
 .summary {
   color: var(--text);
   display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   box-orient: vertical;
   overflow: hidden;
@@ -185,6 +209,7 @@
   transform: none;
   animation: none;
   background: var(--card-bg);
+  flex-direction: column;
   min-height: auto;
   padding: 1rem;
 }
@@ -197,11 +222,9 @@
 
 .proposal-card.modal-view .cover-image {
   position: static;
+  width: 100%;
   height: auto;
-  max-height: 500px;
   object-fit: contain;
-  border: 1px solid var(--border);
-  border-radius: 2px;
   margin-bottom: 0.75rem;
 }
 
@@ -224,8 +247,6 @@
 }
 
 .card-status {
-  position: relative;
-  z-index: 2;
   margin-top: auto;
   padding: 0 0.75rem 0.75rem;
   display: flex;

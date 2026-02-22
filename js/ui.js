@@ -482,11 +482,12 @@ function createProposalCard(
     `
     : '';
 
-  const imageHTML = showAllDetails && proposal.coverImage
+  const imageHTML = proposal.coverImage
     ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">`
     : '';
 
-  card.innerHTML = `
+  if (showAllDetails) {
+    card.innerHTML = `
         ${imageHTML}
         ${headerHTML}
         <div class="card-body">
@@ -495,6 +496,18 @@ function createProposalCard(
         </div>
         ${cardStatusHTML}
     `;
+  } else {
+    card.innerHTML = `
+        <div class="card-content">
+            ${headerHTML}
+            <div class="card-body">
+                <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
+            </div>
+            ${cardStatusHTML}
+        </div>
+        ${imageHTML ? `<div class="card-thumb">${imageHTML}</div>` : ''}
+    `;
+  }
 
   return card;
 }
