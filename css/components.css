@@ -10,7 +10,7 @@
 }
 
 .proposal-card {
-  background: transparent;
+  background: var(--card-bg);
   border: 1px solid var(--border);
   border-top-width: 3px;
   padding: 0;
@@ -19,7 +19,6 @@
   border-radius: 2px;
   position: relative;
   overflow: hidden;
-  min-height: 280px;
 }
 
 .proposal-card.fade-in-on-load {
@@ -60,11 +59,8 @@
 }
 
 .proposal-card header {
-  position: relative;
-  z-index: 2;
   padding: 0.75rem 0.75rem 0;
-  mix-blend-mode: difference;
-  color: #ffffff;
+  color: var(--text);
 }
 
 .title-row {
@@ -164,17 +160,13 @@
 }
 
 .proposal-card .card-body {
-  position: relative;
-  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 0;
   flex: 1;
-  justify-content: flex-end;
 }
 
 .summary {
-  color: #ffffff;
+  color: var(--text);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
@@ -184,8 +176,7 @@
   line-height: 1.5;
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
-  padding: 3rem 0.75rem 0.75rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  padding: 0.5rem 0.75rem 0.75rem;
   font-size: var(--font-size);
 }
 

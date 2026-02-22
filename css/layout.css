@@ -222,30 +222,6 @@ h1 {
   border-radius: 6px;
 }
 
-.view-toggle {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.view-button {
-  flex: 1;
-  border: 1px solid var(--border);
-  background: transparent;
-  padding: 0.45rem 0.6rem;
-  font-size: var(--font-size);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  cursor: pointer;
-  font-weight: 400;
-  transition: background 0.1s ease, color 0.1s ease;
-  border-radius: 6px;
-}
-
-.view-button.is-active {
-  background: var(--text);
-  color: var(--bg);
-}
-
 #proposals-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

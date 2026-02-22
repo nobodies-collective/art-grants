@@ -7,7 +7,6 @@ let proposalsContainer;
 let loadingEl;
 let errorEl;
 let sortSelect;
-let viewButtons;
 let statusButtons;
 let proposalCountEl;
 let searchInput;
@@ -38,7 +37,6 @@ export function initUI() {
   loadingEl = document.getElementById('loading');
   errorEl = document.getElementById('error');
   sortSelect = document.getElementById('sort-select');
-  viewButtons = [...document.querySelectorAll('.view-button')];
   statusButtons = [...document.querySelectorAll('.status-chip')];
   proposalCountEl = document.getElementById('proposal-count');
   searchInput = document.getElementById('search-input');
@@ -62,20 +60,6 @@ function attachEventListeners() {
   sortSelect.addEventListener('change', (event) => {
     state.sortMode = event.target.value;
     applyFiltersAndRender();
-  });
-
-  viewButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const nextView = button.dataset.view;
-      if (nextView === state.viewMode) return;
-      state.viewMode = nextView;
-      viewButtons.forEach((btn) => {
-        const isActive = btn.dataset.view === state.viewMode;
-        btn.classList.toggle('is-active', isActive);
-        btn.setAttribute('aria-pressed', String(isActive));
-      });
-      renderProposals();
-    });
   });
 
   if (searchInput) {
@@ -306,13 +290,6 @@ function sortProposals(list) {
 function renderProposals() {
   const list = state.filteredList;
 
-  if (state.viewMode === 'table') {
-    proposalsContainer.innerHTML = '';
-    proposalsContainer.classList.remove('single');
-    proposalsContainer.appendChild(buildTable(list));
-    return;
-  }
-
   // Ensure cards exist in the DOM
   const needsRebuild = cardElements.size === 0;
   const hasCardsInDom = proposalsContainer.querySelector('.proposal-card');
@@ -489,7 +466,7 @@ function createProposalCard(
     : '';
 
   const authorMarkup = !showAllDetails && showHeader ? formatAuthor(proposal) : '';
-  const categoryHTML = showAllDetails && proposal.category ? `<span class="category-badge">${escapeHtml(proposal.category)}</span>` : '';
+  const categoryHTML = proposal.category ? `<span class="category-badge">${escapeHtml(proposal.category)}</span>` : '';
   const headerHTML = showHeader
     ? `
         <header>
@@ -505,8 +482,12 @@ function createProposalCard(
     `
     : '';
 
+  const imageHTML = showAllDetails && proposal.coverImage
+    ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">`
+    : '';
+
   card.innerHTML = `
-        ${proposal.coverImage ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">` : ''}
+        ${imageHTML}
         ${headerHTML}
         <div class="card-body">
             <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
