@@ -12,13 +12,14 @@
  * 5. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
  * PASSPHRASE SETUP:
- * Create a tab called "_codes" with two columns:
+ * Create a tab called "_codes" with three columns:
  *   Column A: Project slug (or * for admin)
  *   Column B: Passphrase
+ *   Column C: Display name (shown as message author)
  *
  * Example:
- *   *                          | admin-secret     ← works on all projects, tagged "admin"
- *   light-installation-2026    | sun42            ← works on this project only, tagged "member"
+ *   *               | admin-secret | Art Grants Committee
+ *   echoes-of-dust  | u5gv9f       | Artist Name
  *
  * NOTE: Each time you update this script, deploy a NEW version
  * (Deploy → Manage deployments → Edit → New version)
@@ -34,7 +35,7 @@ function doPost(e) {
     var code = (data.code || '').trim();
     var message = (data.message || '').trim();
 
-    if (!project || !author || !message) {
+    if (!project || !message) {
       return jsonResponse({ error: 'Missing required fields' });
     }
 
@@ -44,8 +45,8 @@ function doPost(e) {
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    var role = verifyCode(ss, project, code);
-    if (!role) {
+    var auth = verifyCode(ss, project, code);
+    if (!auth) {
       return jsonResponse({ error: 'Invalid passphrase' });
     }
 
@@ -57,7 +58,7 @@ function doPost(e) {
       tab.setFrozenRows(1);
     }
 
-    tab.appendRow([new Date(), author, role, message]);
+    tab.appendRow([new Date(), auth.name, auth.role, message]);
 
     return jsonResponse({ ok: true });
   } catch (err) {
@@ -73,9 +74,10 @@ function verifyCode(ss, project, code) {
   for (var i = 0; i < data.length; i++) {
     var slug = (data[i][0] || '').toString().trim();
     var passphrase = (data[i][1] || '').toString().trim();
+    var name = (data[i][2] || '').toString().trim();
     if (passphrase === code) {
-      if (slug === '*') return 'admin';
-      if (slug === project) return 'member';
+      if (slug === '*') return { role: 'admin', name: name || 'Admin' };
+      if (slug === project) return { role: 'member', name: name || 'Member' };
     }
   }
   return false;

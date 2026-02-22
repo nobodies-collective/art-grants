@@ -81,13 +81,13 @@ function parseChatCSV(text) {
   }));
 }
 
-async function postChatMessage(slug, author, code, message) {
+async function postChatMessage(slug, code, message) {
   if (!CHAT_SCRIPT_URL) {
     throw new Error('Chat posting is not configured. Set CHAT_SCRIPT_URL in constants.js.');
   }
   const res = await fetch(CHAT_SCRIPT_URL, {
     method: 'POST',
-    body: JSON.stringify({ project: slug, author, code, message }),
+    body: JSON.stringify({ project: slug, code, message }),
   });
   if (!res.ok) throw new Error('Failed to post message');
   const data = await res.json();
@@ -133,14 +133,11 @@ export function createChatSection(proposal) {
     }
   });
 
-  if (CHAT_SCRIPT_URL) {
+  if (CHAT_SCRIPT_URL && proposal.statusKey === 'under-review') {
     const form = document.createElement('form');
     form.className = 'chat-form';
     form.innerHTML = `
-      <div class="chat-form-row">
-        <input type="text" name="author" class="chat-input chat-author" placeholder="Your name" required />
-        <input type="text" name="code" class="chat-input chat-code" placeholder="Passphrase" required />
-      </div>
+      <input type="text" name="code" class="chat-input chat-code" placeholder="Passphrase" required />
       <div class="chat-compose">
         <textarea name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
         <button type="submit" class="chat-send">Send</button>
@@ -154,19 +151,17 @@ export function createChatSection(proposal) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.style.display = 'none';
-      const authorInput = form.querySelector('[name="author"]');
       const codeInput = form.querySelector('[name="code"]');
       const messageInput = form.querySelector('[name="message"]');
       const btn = form.querySelector('.chat-send');
-      const author = authorInput.value.trim();
       const code = codeInput.value.trim();
       const message = messageInput.value.trim();
-      if (!author || !code || !message) return;
+      if (!code || !message) return;
 
       btn.disabled = true;
       btn.textContent = 'Sending...';
       try {
-        await postChatMessage(proposal.slug, author, code, message);
+        await postChatMessage(proposal.slug, code, message);
         messageInput.value = '';
         // Refresh messages
         knownTabs = null;

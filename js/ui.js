@@ -15,17 +15,18 @@ let yearFiltersContainer;
 let isInitialLoad = true;
 let cardElements = new Map();
 
-// Detect base path so /repo-name/proposal/slug works on GitHub Pages
-const BASE_PATH = window.location.pathname.replace(/\/proposal\/.*$/, '').replace(/\/+$/, '');
+// Detect base path so /repo-name/year/slug works on GitHub Pages
+const BASE_PATH = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '').replace(/\/+$/, '');
 
-function getSlugFromPath() {
+function getProposalFromPath() {
   const path = window.location.pathname;
-  const match = path.match(/\/proposal\/([^/]+)\/?$/);
-  return match ? match[1] : null;
+  const match = path.match(/\/(\d{4})\/([^/]+)\/?$/);
+  return match ? { year: match[1], slug: match[2] } : null;
 }
 
-function proposalUrl(slug) {
-  return `${BASE_PATH}/proposal/${slug}`;
+function proposalUrl(proposal) {
+  const year = proposal.year || 'unknown';
+  return `${BASE_PATH}/${year}/${proposal.slug}`;
 }
 
 function baseUrl() {
@@ -86,17 +87,17 @@ function attachEventListeners() {
 
   window.addEventListener('popstate', () => {
     if (state.suppressNavChange) return;
-    const slug = getSlugFromPath();
-    if (slug) {
-      // Close existing project page if open
+    const info = getProposalFromPath();
+    if (info) {
       if (state.currentProjectPage) {
         state.currentProjectPage.remove();
         state.currentProjectPage = null;
       }
-      const proposal = state.proposalData.find((item) => item.slug === slug);
+      const proposal = state.proposalData.find(
+        (item) => item.slug === info.slug && (item.year || 'unknown') === info.year
+      );
       if (proposal) openProposalPage(proposal);
     } else {
-      // Back to listing
       if (state.currentProjectPage) {
         state.currentProjectPage.remove();
         state.currentProjectPage = null;
@@ -170,9 +171,11 @@ async function loadData() {
     applyFiltersAndRender();
     // Loading will be hidden when cards are ready (handled in renderProposals)
 
-    const initialSlug = getSlugFromPath();
-    if (initialSlug) {
-      const initialProposal = state.proposalData.find((item) => item.slug === initialSlug);
+    const initialInfo = getProposalFromPath();
+    if (initialInfo) {
+      const initialProposal = state.proposalData.find(
+        (item) => item.slug === initialInfo.slug && (item.year || 'unknown') === initialInfo.year
+      );
       if (initialProposal) {
         openProposalPage(initialProposal);
       }
@@ -617,7 +620,7 @@ function openProposalPage(proposal) {
 
   // Update URL
   state.suppressNavChange = true;
-  window.history.pushState(null, '', proposalUrl(proposal.slug));
+  window.history.pushState(null, '', proposalUrl(proposal));
   setTimeout(() => { state.suppressNavChange = false; }, 0);
   window.scrollTo(0, 0);
 
