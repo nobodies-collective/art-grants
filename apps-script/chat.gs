@@ -14,19 +14,23 @@
  * 6. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
  * PASSPHRASE SETUP:
- * Create a tab called "_codes" in the spreadsheet with two columns:
- *   Column A: Project slug (e.g. "light-installation-2026")
- *   Column B: Passphrase (e.g. "sun42")
- * Only people who know the passphrase can post messages.
+ * Two sources of passphrases:
  *
- * Use slug "*" for an admin passphrase that works on all projects:
- *   *  |  admin-secret-phrase
+ * 1. ADMIN passphrase — in the chat spreadsheet, create a tab "_codes":
+ *      Column A: *
+ *      Column B: your-admin-secret
+ *    This works on ALL projects. Messages are tagged "admin".
+ *
+ * 2. PER-PROJECT passphrase — in the proposals spreadsheet, add a
+ *    column called "Passphrase". Each row's passphrase lets that
+ *    project's participants post. Messages are tagged "member".
  *
  * NOTE: Each time you update this script, create a NEW deployment
  * (Deploy → Manage deployments → Edit → New version)
  */
 
-var SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
+var CHAT_SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
+var PROPOSALS_SPREADSHEET_ID = '1rlp7MPswcL8zYdwG11QKOUUakxjxWW4DU0mDvj8r5rs';
 
 function doPost(e) {
   try {
@@ -44,7 +48,7 @@ function doPost(e) {
       return jsonResponse({ error: 'Passphrase is required' });
     }
 
-    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var ss = SpreadsheetApp.openById(CHAT_SPREADSHEET_ID);
 
     // Verify passphrase and detect role
     var role = verifyCode(ss, project, code);
@@ -68,20 +72,56 @@ function doPost(e) {
   }
 }
 
-function verifyCode(ss, project, code) {
-  var codesTab = ss.getSheetByName('_codes');
-  if (!codesTab) return false;
-
-  var data = codesTab.getDataRange().getValues();
-  for (var i = 0; i < data.length; i++) {
-    var slug = (data[i][0] || '').toString().trim();
-    var passphrase = (data[i][1] || '').toString().trim();
-    if (passphrase === code) {
-      if (slug === '*') return 'admin';
-      if (slug === project) return 'member';
+function verifyCode(chatSS, project, code) {
+  // 1. Check admin passphrase from _codes tab in chat spreadsheet
+  var codesTab = chatSS.getSheetByName('_codes');
+  if (codesTab) {
+    var codes = codesTab.getDataRange().getValues();
+    for (var i = 0; i < codes.length; i++) {
+      var slug = (codes[i][0] || '').toString().trim();
+      var passphrase = (codes[i][1] || '').toString().trim();
+      if (passphrase === code && slug === '*') return 'admin';
     }
   }
+
+  // 2. Check per-project passphrase from proposals spreadsheet
+  try {
+    var proposalsSS = SpreadsheetApp.openById(PROPOSALS_SPREADSHEET_ID);
+    var sheet = proposalsSS.getSheets()[0]; // First sheet (form responses)
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+
+    // Find Title and Passphrase columns (case-insensitive)
+    var titleCol = -1;
+    var codeCol = -1;
+    for (var c = 0; c < headers.length; c++) {
+      var h = (headers[c] || '').toString().toLowerCase().trim();
+      if (h === 'title') titleCol = c;
+      if (h === 'passphrase' || h === 'code' || h === 'pass') codeCol = c;
+    }
+
+    if (titleCol >= 0 && codeCol >= 0) {
+      for (var r = 1; r < data.length; r++) {
+        var title = (data[r][titleCol] || '').toString().trim();
+        var rowSlug = generateSlug(title);
+        var rowCode = (data[r][codeCol] || '').toString().trim();
+        if (rowSlug === project && rowCode === code) return 'member';
+      }
+    }
+  } catch (err) {
+    // If proposals sheet is inaccessible, skip
+  }
+
   return false;
+}
+
+function generateSlug(title) {
+  return (title || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function doGet(e) {
@@ -91,7 +131,7 @@ function doGet(e) {
       return jsonResponse({ error: 'Missing project parameter' });
     }
 
-    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var ss = SpreadsheetApp.openById(CHAT_SPREADSHEET_ID);
     var tab = ss.getSheetByName(project);
 
     if (!tab || tab.getLastRow() < 2) {
