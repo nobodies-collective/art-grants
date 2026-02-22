@@ -91,6 +91,7 @@ export function mapRowToProposal(row, headers, index = null) {
     statusLabel: formatStatusLabel(status),
     statusClass: formatStatusClass(status),
     statusKey: formatStatusClass(status),
+    messagingOn: findColumn(row, headers, ['Messaging On', 'messaging on', 'Messaging']).toLowerCase() === 'true',
     orderIndex: Math.random(),
   };
 }

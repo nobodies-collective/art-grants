@@ -3,6 +3,8 @@ import { fetchSpreadsheetData, mapRowToProposal } from './data.js';
 import { escapeHtml, formatText, getDisplayName } from './utils.js';
 import { createChatSection } from './chat.js';
 
+const BASE_TITLE = document.title;
+
 let proposalsContainer;
 let loadingEl;
 let errorEl;
@@ -620,13 +622,14 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   const body = document.createElement('div');
   body.className = 'project-body';
   body.appendChild(card);
-  if (proposal.statusKey === 'under-review') {
+  if (proposal.messagingOn) {
     body.appendChild(createChatSection(proposal));
   }
   page.append(header, body);
   document.querySelector('.page-wrap').appendChild(page);
 
-  // Update URL only when navigating forward (not on popstate)
+  // Update URL and title only when navigating forward (not on popstate)
+  document.title = `${proposal.title} — ${BASE_TITLE}`;
   if (!skipPushState) {
     window.history.pushState(null, '', proposalUrl(proposal));
   }
@@ -643,6 +646,7 @@ function closeProjectPage(page) {
   layout.style.display = '';
   state.currentProjectPage = null;
 
+  document.title = BASE_TITLE;
   window.history.pushState(null, '', baseUrl());
 }
 

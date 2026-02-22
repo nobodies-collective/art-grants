@@ -166,7 +166,7 @@ export function createChatSection(proposal) {
 
   refreshMessages();
 
-  if (CHAT_SCRIPT_URL && proposal.statusKey === 'under-review') {
+  if (CHAT_SCRIPT_URL && proposal.messagingOn) {
     const draftKey = 'chat-draft-' + slug;
     const savedDraft = localStorage.getItem(draftKey) || '';
     let debounceTimer = null;
