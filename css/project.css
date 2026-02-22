@@ -31,13 +31,9 @@
 
 .project-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: var(--space);
   align-items: start;
-}
-
-.project-body:not(:has(.chat-section)) {
-  grid-template-columns: 1fr;
 }
 
 .project-card {
@@ -76,10 +72,6 @@
 }
 
 @media (max-width: 768px) {
-  .project-body {
-    grid-template-columns: 1fr;
-  }
-
   .project-title {
     font-size: 1.2rem;
   }

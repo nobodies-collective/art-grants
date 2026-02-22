@@ -8,5 +8,3 @@ export const PLACEHOLDER_IMAGE_BASE = 'https://www.sourcesplash.com/i/random';
 // Deploy the script in apps-script/chat.gs and paste the URL here
 export const CHAT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyt3h3rfykxqBqRlDTIvp0IOfRDSNIT5vZyKM4Pxd7iLJSO1POOteQzQJhZcp6NBrRW/exec';
 
-
-

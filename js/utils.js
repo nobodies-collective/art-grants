@@ -114,5 +114,24 @@ export function getDisplayName(proposal) {
   return proposal.name || '';
 }
 
-
+export function renderMarkdown(text = '') {
+  if (typeof window.marked !== 'undefined' && typeof window.DOMPurify !== 'undefined') {
+    const renderer = new marked.Renderer();
+    const origLink = renderer.link.bind(renderer);
+    renderer.link = function (args) {
+      const html = origLink(args);
+      return html.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ');
+    };
+    const raw = marked.parse(text, { breaks: true, gfm: true, renderer });
+    return DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: [
+        'p', 'br', 'strong', 'em', 'a', 'code', 'pre', 'blockquote',
+        'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'hr', 'img', 'del',
+        'table', 'thead', 'tbody', 'tr', 'th', 'td', 'span', 'div',
+      ],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'title', 'class'],
+    });
+  }
+  return escapeHtml(text).replace(/\n/g, '<br>');
+}
 

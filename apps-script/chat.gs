@@ -11,14 +11,15 @@
  *    - Who has access: Anyone
  * 5. Copy the deployment URL and paste it into js/constants.js as CHAT_SCRIPT_URL
  *
- * _codes tab layout (columns A–C):
+ * _codes tab layout (columns A–D):
  *   Column A: Project slug (or * for admin)
  *   Column B: Passphrase
  *   Column C: Display name (shown as message author)
+ *   Column D: Role (Artist or Liaison)
  *
  * Example:
- *   *               | admin-secret | Art Grants Committee
- *   echoes-of-dust  | u5gv9f       | Artist Name
+ *   *               | admin-secret | Art Grants Committee | Liaison
+ *   echoes-of-dust  | u5gv9f       | Artist Name          | Artist
  *
  * NOTE: Each time you update this script, deploy a NEW version
  * (Deploy → Manage deployments → Edit → New version)
@@ -81,9 +82,10 @@ function verifyCode(ss, project, code) {
     var slug = (data[i][0] || '').toString().trim();
     var passphrase = (data[i][1] || '').toString().trim();
     var name = (data[i][2] || '').toString().trim();
+    var role = (data[i][3] || '').toString().trim();
     if (passphrase === code) {
-      if (slug === '*') return { role: '', name: name || 'Art Grants Committee' };
-      if (slug === project) return { role: '', name: name || 'Artist' };
+      if (slug === '*') return { role: role || 'Admin', name: name || 'Art Grants Committee' };
+      if (slug === project) return { role: role || 'Artist', name: name || 'Artist' };
     }
   }
   return false;

@@ -1,5 +1,5 @@
 import { CHAT_SCRIPT_URL } from './constants.js';
-import { escapeHtml } from './utils.js';
+import { escapeHtml, renderMarkdown } from './utils.js';
 
 async function fetchChatMessages(slug) {
   if (!CHAT_SCRIPT_URL) return [];
@@ -19,8 +19,6 @@ async function postChatMessage(slug, code, message) {
   if (!CHAT_SCRIPT_URL) {
     throw new Error('Chat posting is not configured. Set CHAT_SCRIPT_URL in constants.js.');
   }
-  // Use GET with action=post so the redirect from Apps Script works
-  // (POST + cross-origin redirect is blocked by browsers)
   const params = new URLSearchParams({
     action: 'post',
     project: slug,
@@ -44,6 +42,11 @@ function formatTimestamp(raw) {
   } catch {
     return raw;
   }
+}
+
+function autoExpand(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
 }
 
 export function createChatSection(proposal) {
@@ -74,6 +77,9 @@ export function createChatSection(proposal) {
 
   if (CHAT_SCRIPT_URL && proposal.statusKey === 'under-review') {
     const savedCode = localStorage.getItem('chat-code-' + proposal.slug) || '';
+    const draftKey = 'chat-draft-' + proposal.slug;
+    const savedDraft = localStorage.getItem(draftKey) || '';
+    let debounceTimer = null;
 
     const form = document.createElement('form');
     form.className = 'chat-form';
@@ -81,6 +87,7 @@ export function createChatSection(proposal) {
       <div class="chat-compose">
         <label for="chat-msg-${proposal.slug}" class="visually-hidden">Message</label>
         <textarea id="chat-msg-${proposal.slug}" name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
+        <div class="chat-hints"><strong>**bold**</strong> <em>*italic*</em> <code>\`code\`</code> [link](url) — <kbd>Ctrl+Enter</kbd> to send</div>
       </div>
       <div class="chat-bottom">
         <label for="chat-code-${proposal.slug}" class="visually-hidden">Passphrase</label>
@@ -88,6 +95,32 @@ export function createChatSection(proposal) {
         <button type="submit" class="chat-send">Send</button>
       </div>
     `;
+
+    const textarea = form.querySelector('.chat-textarea');
+
+    // Restore draft
+    if (savedDraft) {
+      textarea.value = savedDraft;
+      requestAnimationFrame(() => autoExpand(textarea));
+    }
+
+    function saveDraft() {
+      localStorage.setItem(draftKey, textarea.value);
+    }
+
+    textarea.addEventListener('input', () => {
+      autoExpand(textarea);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(saveDraft, 300);
+    });
+
+    // Ctrl/Cmd+Enter to send
+    textarea.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        form.requestSubmit();
+      }
+    });
 
     const errorEl = document.createElement('p');
     errorEl.className = 'chat-error';
@@ -97,10 +130,9 @@ export function createChatSection(proposal) {
       e.preventDefault();
       errorEl.style.display = 'none';
       const codeInput = form.querySelector('[name="code"]');
-      const messageInput = form.querySelector('[name="message"]');
       const btn = form.querySelector('.chat-send');
       const code = codeInput.value.trim();
-      const message = messageInput.value.trim();
+      const message = textarea.value.trim();
       if (!code || !message) return;
 
       btn.disabled = true;
@@ -108,7 +140,10 @@ export function createChatSection(proposal) {
       try {
         await postChatMessage(proposal.slug, code, message);
         localStorage.setItem('chat-code-' + proposal.slug, code);
-        messageInput.value = '';
+        // Clear compose
+        textarea.value = '';
+        localStorage.removeItem(draftKey);
+        textarea.style.height = 'auto';
         // Refresh messages
         const messages = await fetchChatMessages(proposal.slug);
         messagesEl.innerHTML = '';
@@ -137,14 +172,16 @@ export function createChatSection(proposal) {
 function renderMessage(msg) {
   const el = document.createElement('div');
   el.className = 'chat-message';
-  const roleClass = msg.role ? ` chat-role-${msg.role.toLowerCase().replace(/\s+/g, '-')}` : '';
+
+  const role = (msg.role || 'Artist').trim();
+  const roleKey = role.toLowerCase().replace(/\s+/g, '-');
+
   el.innerHTML = `
-    <div class="chat-message-header${roleClass}">
-      <span class="chat-message-author">${escapeHtml(msg.author)}</span>
-      ${msg.role ? `<span class="chat-message-role">${escapeHtml(msg.role)}</span>` : ''}
+    <div class="chat-message-header chat-role-${roleKey}">
+      <span class="chat-message-role">${escapeHtml(role)}</span>
       <span class="chat-message-time">${escapeHtml(formatTimestamp(msg.timestamp))}</span>
     </div>
-    <div class="chat-message-body">${escapeHtml(msg.message)}</div>
+    <div class="chat-message-body md-content">${renderMarkdown(msg.message)}</div>
   `;
   return el;
 }
