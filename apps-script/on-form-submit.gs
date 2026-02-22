@@ -19,7 +19,6 @@
  * - Generate a slug from the title
  * - Generate a random passphrase
  * - Add a row to the _codes tab in the chat spreadsheet
- * - Optionally email the passphrase to the submitter
  */
 
 var CHAT_SPREADSHEET_ID = '1nujQxJi7tvuqjc3PB0fb535VqU7ol6FJgqMd6pU6u-8';
@@ -32,12 +31,10 @@ function onFormSubmit(e) {
     // Find Title and Artist name columns (case-insensitive)
     var title = '';
     var artist = '';
-    var email = '';
     for (var i = 0; i < headers.length; i++) {
       var h = (headers[i] || '').toString().toLowerCase().trim();
       if (h === 'title') title = (row[i] || '').toString().trim();
       if (h.indexOf('artist') >= 0 || h === 'name') artist = (row[i] || '').toString().trim();
-      if (h.indexOf('email') >= 0) email = (row[i] || '').toString().trim();
     }
 
     if (!title) return;
@@ -55,21 +52,6 @@ function onFormSubmit(e) {
     }
 
     codesTab.appendRow([slug, passphrase, displayName]);
-
-    // Email the passphrase to the submitter if we have their email
-    if (email) {
-      MailApp.sendEmail({
-        to: email,
-        subject: 'Your project discussion passphrase — ' + title,
-        body: 'Hi ' + (artist || 'there') + ',\n\n' +
-              'Your proposal "' + title + '" has been received.\n\n' +
-              'To participate in the project discussion on the Art Grants platform, ' +
-              'use this passphrase:\n\n' +
-              '  ' + passphrase + '\n\n' +
-              'Keep this passphrase private — it identifies you in the discussion.\n\n' +
-              'Art Grants'
-      });
-    }
 
   } catch (err) {
     Logger.log('onFormSubmit error: ' + err.message);
