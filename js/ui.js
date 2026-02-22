@@ -375,15 +375,23 @@ function renderProposals() {
     });
   }
 
-  // Toggle visibility based on filtered list
+  // Reorder and toggle visibility based on filtered/sorted list
   const visibleUniqueKeys = new Set(list.map(p => p.uniqueKey));
   let visibleCount = 0;
-  
-  cardElements.forEach((card, uniqueKey) => {
-    if (visibleUniqueKeys.has(uniqueKey)) {
+
+  // Reorder DOM to match sorted list
+  list.forEach((proposal) => {
+    const card = cardElements.get(proposal.uniqueKey);
+    if (card) {
+      proposalsContainer.appendChild(card);
       card.style.display = '';
       visibleCount++;
-    } else {
+    }
+  });
+
+  // Hide cards not in filtered list
+  cardElements.forEach((card, uniqueKey) => {
+    if (!visibleUniqueKeys.has(uniqueKey)) {
       card.style.display = 'none';
     }
   });
