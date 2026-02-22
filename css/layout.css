@@ -113,6 +113,7 @@ h1 {
 .controls {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
+  grid-auto-rows: 1fr;
   gap: 0.5rem;
   font-size: var(--font-size-small);
 }
@@ -149,16 +150,15 @@ h1 {
   outline-offset: 2px;
 }
 
-.status-chip {
-  border: 1px solid var(--border);
-  background: transparent;
-  text-align: center;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  transition: background 0.1s ease, color 0.1s ease;
-  border-radius: 6px;
+.controls .status-chip.status {
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  border: none;
+}
+
+.controls .status-chip.status:not(.is-active) {
+  opacity: 0.4;
 }
 
 .status-chip.is-active {
