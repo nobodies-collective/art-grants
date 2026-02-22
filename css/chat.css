@@ -21,7 +21,6 @@
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
-  padding-right: 0.25rem;
 }
 
 .chat-loading,
@@ -91,7 +90,42 @@
   font-size: var(--font-size);
   color: var(--text);
   opacity: 0.5;
+}
+
+.chat-message-actions {
+  display: flex;
+  gap: 0.3rem;
   margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.chat-message:hover .chat-message-actions {
+  opacity: 1;
+}
+
+.chat-action-btn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
+.chat-action-btn:hover {
+  opacity: 1;
+  border-color: var(--text);
+}
+
+.chat-delete-btn:hover {
+  color: #d50000;
+  border-color: #d50000;
 }
 
 .chat-message-body {
@@ -245,6 +279,7 @@
   overflow-y: auto;
 }
 
+
 .chat-hints {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 0.75rem;
@@ -284,6 +319,69 @@
   cursor: not-allowed;
 }
 
+/* Inline edit mode */
+
+.chat-editing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.chat-edit-textarea {
+  font-family: inherit;
+  font-size: var(--font-size);
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  min-height: 3rem;
+  outline: none;
+}
+
+.chat-edit-textarea:focus {
+  border-color: var(--text);
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+
+.chat-edit-actions {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.chat-edit-save,
+.chat-edit-cancel {
+  font-family: inherit;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.chat-edit-save {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.chat-edit-save:hover {
+  opacity: 0.85;
+}
+
+.chat-edit-cancel {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.chat-edit-cancel:hover {
+  border-color: var(--text);
+}
+
 @media (max-width: 600px) {
   .chat-form-row {
     flex-direction: column;
@@ -297,6 +395,10 @@
 
   .chat-hints {
     display: none;
+  }
+
+  .chat-message-actions {
+    opacity: 0.5;
   }
 
 }
