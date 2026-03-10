@@ -1,4 +1,4 @@
-import { statusFilters, yearFilters, state } from './state.js';
+import { yearFilters, state } from './state.js';
 import { fetchSpreadsheetData, mapRowToProposal } from './data.js';
 import { escapeHtml, formatText, getDisplayName } from './utils.js';
 import { createChatSection } from './chat.js';
@@ -9,7 +9,6 @@ let proposalsContainer;
 let loadingEl;
 let errorEl;
 let sortSelect;
-let statusButtons;
 let proposalCountEl;
 let searchInput;
 let yearFiltersContainer;
@@ -39,7 +38,6 @@ export function initUI() {
   loadingEl = document.getElementById('loading');
   errorEl = document.getElementById('error');
   sortSelect = document.getElementById('sort-select');
-  statusButtons = [...document.querySelectorAll('.status-chip')];
   proposalCountEl = document.getElementById('proposal-count');
   searchInput = document.getElementById('search-input');
   yearFiltersContainer = document.getElementById('year-filters-container');
@@ -49,16 +47,6 @@ export function initUI() {
 }
 
 function attachEventListeners() {
-  statusButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const status = button.dataset.status;
-      statusFilters[status] = !statusFilters[status];
-      button.classList.toggle('is-active', statusFilters[status]);
-      button.setAttribute('aria-pressed', String(statusFilters[status]));
-      applyFiltersAndRender();
-    });
-  });
-
   sortSelect.addEventListener('change', (event) => {
     state.sortMode = event.target.value;
     applyFiltersAndRender();
@@ -177,9 +165,6 @@ async function loadData() {
 function applyFiltersAndRender() {
   if (!state.proposalData.length) return;
   const filtered = state.proposalData.filter((proposal) => {
-    // Status filter
-    const statusMatch = statusFilters[proposal.statusKey] !== false;
-    
     // Year filter
     const year = (proposal.year || '').trim();
     const activeYears = Object.keys(yearFilters).filter(y => yearFilters[y] === true);
@@ -223,7 +208,7 @@ function applyFiltersAndRender() {
       searchMatch = searchableText.includes(query);
     }
     
-    return statusMatch && yearMatch && searchMatch;
+    return yearMatch && searchMatch;
   });
 
   state.filteredList = sortProposals(filtered);
@@ -262,19 +247,6 @@ function sortProposals(list) {
       if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
       return a.titleLower.localeCompare(b.titleLower);
     });
-  }
-  if (state.sortMode === 'status') {
-    const order = {
-      funded: 0,
-      'under-review': 1,
-      'not-funded': 2,
-      'self-funded': 3,
-    };
-    return copy.sort(
-      (a, b) =>
-        (order[a.statusClass] ?? 99) - (order[b.statusClass] ?? 99) ||
-        a.titleLower.localeCompare(b.titleLower)
-    );
   }
   // Default: sort by year descending, then by category
   return copy.sort((a, b) => {
@@ -456,7 +428,7 @@ function buildDetailSections(proposal) {
 
 function createProposalCard(
   proposal,
-  { showAllDetails = false, showStatusText = false, showHeader = true } = {}
+  { showAllDetails = false, showHeader = true } = {}
 ) {
   const card = document.createElement('article');
   card.className = 'proposal-card';
@@ -471,16 +443,7 @@ function createProposalCard(
         </div>
     ` : '';
 
-  card.dataset.status = proposal.statusClass;
   card.dataset.slug = proposal.slug;
-  const statusHTML = showStatusText
-    ? `<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`
-    : '';
-  const cardStatusHTML = showStatusText
-    ? `<div class="card-status"><span class="status ${proposal.statusClass}">${escapeHtml(
-        proposal.statusLabel
-      )}</span></div>`
-    : '';
 
   const authorMarkup = !showAllDetails && showHeader ? formatAuthor(proposal) : '';
   const categoryHTML = proposal.category ? `<span class="category-badge">${escapeHtml(proposal.category)}</span>` : '';
@@ -491,7 +454,6 @@ function createProposalCard(
                 <h2>${escapeHtml(proposal.title)}</h2>
                 <div class="title-row-right">
                     ${categoryHTML}
-                    ${statusHTML}
                 </div>
             </div>
             ${authorMarkup}
@@ -516,8 +478,7 @@ function createProposalCard(
                     </div>
                     ${detailsHTML}
                 </div>
-                ${cardStatusHTML}
-            </div>
+                            </div>
         </div>
     `;
   } else {
@@ -527,8 +488,7 @@ function createProposalCard(
             <div class="card-body">
                 <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
             </div>
-            ${cardStatusHTML}
-        </div>
+                    </div>
         ${imageHTML ? `<div class="card-thumb">${imageHTML}</div>` : ''}
     `;
   }
@@ -550,7 +510,6 @@ function buildTable(list) {
             <th>Year</th>
             <th>Category</th>
             <th>Description</th>
-            <th>Status</th>
         </tr>
     `;
 
@@ -576,12 +535,7 @@ function buildTable(list) {
       descriptionTd.title = summaryText;
     }
 
-    const statusTd = document.createElement('td');
-    statusTd.innerHTML = `<span class="status ${proposal.statusClass}">${escapeHtml(
-      proposal.statusLabel
-    )}</span>`;
-
-    tr.append(titleTd, yearTd, categoryTd, descriptionTd, statusTd);
+    tr.append(titleTd, yearTd, categoryTd, descriptionTd);
     tr.addEventListener('click', () => openProposalPage(proposal));
     tbody.appendChild(tr);
   });
@@ -606,7 +560,6 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   // Build project page
   const page = document.createElement('div');
   page.className = 'project-page';
-  page.dataset.status = proposal.statusClass;
 
   const header = document.createElement('header');
   header.className = 'project-header';
@@ -631,14 +584,12 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   if (displayName) parts.push(escapeHtml(displayName));
   if (proposal.year) parts.push(escapeHtml(proposal.year));
   if (proposal.category) parts.push(`<span class="category-badge">${escapeHtml(proposal.category)}</span>`);
-  parts.push(`<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`);
   meta.innerHTML = parts.join(' · ');
 
   header.append(backLink, titleEl, meta);
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,
-    showStatusText: false,
     showHeader: false,
   });
   card.classList.add('project-card');
