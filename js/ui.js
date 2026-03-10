@@ -103,7 +103,13 @@ function buildYearFilters() {
   
   // Clear existing buttons
   yearFiltersContainer.innerHTML = '';
-  
+
+  // Hide year filters if only one year exists
+  if (sortedYears.length <= 1) {
+    sortedYears.forEach(year => { yearFilters[year] = true; });
+    return;
+  }
+
   // Initialize only the most recent year as active, all others as inactive
   sortedYears.forEach((year, index) => {
     yearFilters[year] = index === 0; // Only first (most recent) year is true
