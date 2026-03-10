@@ -53,7 +53,7 @@ export function mapRowToProposal(row, headers, index = null) {
 
   if (!imageUrl) {
     const encodedTitle = encodeURIComponent(title);
-    imageUrl = `${PLACEHOLDER_IMAGE_BASE}?q=${encodedTitle}`;
+    imageUrl = `${PLACEHOLDER_IMAGE_BASE}?q=${encodedTitle}&w=800&h=450`;
   }
 
   const status = findColumn(row, headers, ['Status', 'status']);
