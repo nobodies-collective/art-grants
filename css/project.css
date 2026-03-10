@@ -86,12 +86,11 @@
 
 @media (min-width: 1100px) {
   .project-body {
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .project-page .chat-section {
-    position: sticky;
-    top: 1rem;
+  .project-card {
+    grid-column: 1 / -1;
   }
 }
 
