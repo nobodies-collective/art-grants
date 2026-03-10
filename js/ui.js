@@ -423,6 +423,7 @@ function renderProposals() {
 function buildDetailSections(proposal) {
   const sections = [
     { label: 'Summary', value: proposal.summary },
+    { label: 'Team', value: proposal.team },
     { label: 'Experience & Interaction', value: proposal.experienceInteraction },
     { label: 'Scale & Footprint', value: proposal.scaleFootprint },
     { label: 'Materials', value: proposal.materials },
@@ -438,7 +439,6 @@ function buildDetailSections(proposal) {
     { label: 'Other Funding', value: proposal.otherFunding },
     { label: 'Budget', value: proposal.budget },
     { label: 'Documents', value: proposal.documents },
-    { label: 'Team', value: proposal.team },
     { label: 'Comments', value: proposal.comments },
   ];
 
