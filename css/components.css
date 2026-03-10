@@ -134,6 +134,7 @@
 .proposal-card .author {
   color: inherit;
   font-size: var(--font-size);
+  font-style: italic;
   letter-spacing: 0.02em;
   opacity: 0.8;
   white-space: nowrap;
