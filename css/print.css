@@ -12,7 +12,6 @@
 
   .sidebar,
   .controls,
-  .view-toggle,
   .intro,
   .spinner,
   .error,
@@ -40,11 +39,6 @@
     height: auto;
     max-height: 120mm;
     object-fit: contain;
-  }
-
-  .card-status,
-  .status {
-    display: none !important;
   }
 
   .summary,

@@ -512,55 +512,6 @@ function createProposalCard(
   return card;
 }
 
-function buildTable(list) {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'table-shell';
-
-  const table = document.createElement('table');
-  table.className = 'proposal-table';
-
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-        <tr>
-            <th>Title</th>
-            <th>Year</th>
-            <th>Category</th>
-            <th>Description</th>
-        </tr>
-    `;
-
-  const tbody = document.createElement('tbody');
-  list.forEach((proposal) => {
-    const tr = document.createElement('tr');
-    tr.classList.add('table-row-clickable');
-
-    const titleTd = document.createElement('td');
-    titleTd.textContent = proposal.title;
-
-    const yearTd = document.createElement('td');
-    yearTd.textContent = proposal.year || '—';
-
-    const categoryTd = document.createElement('td');
-    categoryTd.textContent = proposal.category || '—';
-
-    const descriptionTd = document.createElement('td');
-    descriptionTd.className = 'description-cell';
-    const summaryText = (proposal.description || '').replace(/\s+/g, ' ').trim();
-    descriptionTd.textContent = summaryText || '—';
-    if (summaryText) {
-      descriptionTd.title = summaryText;
-    }
-
-    tr.append(titleTd, yearTd, categoryTd, descriptionTd);
-    tr.addEventListener('click', () => openProposalPage(proposal));
-    tbody.appendChild(tr);
-  });
-
-  table.append(thead, tbody);
-  wrapper.appendChild(table);
-  return wrapper;
-}
-
 function formatAuthor(proposal) {
   const displayName = getDisplayName(proposal);
   if (!displayName) return '';

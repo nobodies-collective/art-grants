@@ -1,12 +1,8 @@
 /* Card and data components */
 
 @keyframes cardsFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .proposal-card {
@@ -84,7 +80,6 @@
 }
 
 .proposal-card h2 {
-  font-size: var(--font-size);
   margin-bottom: 0.25rem;
   color: inherit;
   flex: 1;
@@ -92,48 +87,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 300;
   letter-spacing: 0.02em;
-}
-
-.status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.55rem;
-  min-height: 1.5rem;
-  min-width: 2.5rem;
-  font-size: inherit;
-  font-weight: 300;
-  white-space: nowrap;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  border-radius: 6px;
-}
-
-.status.funded {
-  background: #00c853;
-  color: #ffffff;
-}
-
-.status.not-funded {
-  background: #d50000;
-  color: #ffffff;
-}
-
-.status.under-review {
-  background: #ffab00;
-  color: #000;
-}
-
-.status.self-funded {
-  background: #2196f3;
-  color: #ffffff;
 }
 
 .proposal-card .author {
   color: inherit;
-  font-size: var(--font-size);
   font-style: italic;
   letter-spacing: 0.02em;
   opacity: 0.8;
@@ -142,16 +100,9 @@
   text-overflow: ellipsis;
 }
 
-.category-row {
-  margin-top: 0.5rem;
-  margin-bottom: 0.25rem;
-}
-
 .category-badge {
   display: inline-block;
   padding: 0.25rem 0.55rem;
-  font-size: var(--font-size);
-  font-weight: 300;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -184,7 +135,6 @@
   overflow: hidden;
   line-height: 1.5;
   letter-spacing: 0.02em;
-  font-size: var(--font-size);
 }
 
 .proposal-card.modal-view {
@@ -282,18 +232,6 @@
   padding: 0;
 }
 
-.card-status {
-  margin-top: auto;
-  padding: 0 0.75rem 0.75rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.proposal-card.modal-view .card-status {
-  padding: 0.75rem 0 0;
-}
-
 .details-content {
   margin-top: 1rem;
   line-height: 1.5;
@@ -310,7 +248,6 @@
 }
 
 .detail-section h3 {
-  font-size: var(--font-size);
   text-transform: none;
   letter-spacing: 0;
   margin-bottom: 0.5rem;
@@ -320,60 +257,8 @@
 
 .detail-section p {
   color: var(--text);
-  font-size: var(--font-size);
   letter-spacing: 0.02em;
   line-height: 1.5;
-}
-
-.table-shell {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 0.5rem;
-  grid-column: 1 / -1;
-}
-
-.proposal-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size);
-  table-layout: fixed;
-}
-
-.proposal-table th,
-.proposal-table td {
-  border-bottom: 1px solid var(--border);
-  padding: 0.75rem 0.5rem;
-  text-align: left;
-  vertical-align: middle;
-}
-
-.proposal-table th {
-  text-align: left;
-  font-size: var(--font-size);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text);
-  font-weight: 300;
-  background: var(--bg);
-}
-
-.proposal-table td:first-child {
-  max-width: 200px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 300;
-}
-
-.proposal-table .description-cell {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.proposal-table tbody tr.table-row-clickable {
-  cursor: pointer;
 }
 
 .empty {

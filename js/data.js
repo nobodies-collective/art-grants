@@ -57,8 +57,6 @@ export function mapRowToProposal(row, headers, index = null) {
   }
   const imageUrl = images[0];
 
-  const status = findColumn(row, headers, ['Status', 'status']);
-
   const timestamp = findColumn(row, headers, ['Timestamp', 'timestamp']);
   const year = deriveYear(timestamp);
   const slug = generateSlug(title);
@@ -78,10 +76,6 @@ export function mapRowToProposal(row, headers, index = null) {
     description: findColumn(row, headers, ['Description', 'description']),
     scaleFootprint: findColumn(row, headers, ['Scale & Footprint', 'Scale &amp; Footprint']),
     sound: findColumn(row, headers, ['Sound', 'sound']),
-    supportNeeded: findColumn(row, headers, ['Support Needed', 'support needed']),
-    totalBudget: findColumn(row, headers, ['Total Project Budget (EUR)', 'Total Project Budget']),
-    earlyEntry: findColumn(row, headers, ['Early Entry', 'early entry']),
-    budget: findColumn(row, headers, ['Budget', 'budget']),
     otherFunding: findColumn(row, headers, ['Other Funding', 'other funding']),
     summary: findColumn(row, headers, ['Summary', 'summary']),
     materials: findColumn(row, headers, ['Materials', 'materials']),
@@ -93,18 +87,11 @@ export function mapRowToProposal(row, headers, index = null) {
     power: findColumn(row, headers, ['Power', 'power']),
     experienceInteraction: findColumn(row, headers, ['Experience & Interaction', 'Experience &amp; Interaction']),
     grantRequest: findColumn(row, headers, ['Grant Request (EUR)', 'Grant Request (EUR) ', 'Grant Request']),
-    documents: findColumn(row, headers, ['Documents', 'documents']),
     team: findColumn(row, headers, ['Team', 'team']),
-    sexPositive: findColumn(row, headers, ['Sex-positive', 'sex-positive']),
-    type: findColumn(row, headers, ['Type', 'type']),
     comments: findColumn(row, headers, ['Comments', 'comments']),
     coverImage: imageUrl,
     images,
-    statusLabel: formatStatusLabel(status),
-    statusClass: formatStatusClass(status),
-    statusKey: formatStatusClass(status),
     messagingOn: findColumn(row, headers, ['Messaging On', 'messaging on', 'Messaging']).toLowerCase() === 'true',
-    orderIndex: Math.random(),
   };
 }
 
@@ -122,36 +109,4 @@ function deriveYear(timestamp) {
   const d = new Date(str);
   if (!isNaN(d.getTime())) return d.getFullYear().toString();
   return '';
-}
-
-function formatStatusClass(status) {
-  if (!status) return 'under-review';
-  const normalized = status.toLowerCase().trim().replace(/\s+/g, ' ');
-  // Check for self-funded first (before regular funded)
-  if ((normalized.includes('self') && normalized.includes('funded')) ||
-      normalized === 'self-funded' ||
-      normalized === 'self funded' ||
-      (normalized.includes('art') && normalized.includes('no') && normalized.includes('grant'))) {
-    return 'self-funded';
-  }
-  if (normalized.includes('not') && normalized.includes('funded')) return 'not-funded';
-  if (normalized.includes('funded') && !normalized.includes('not')) return 'funded';
-  if (normalized.includes('review') || normalized.includes('under')) return 'under-review';
-  return 'under-review';
-}
-
-function formatStatusLabel(status) {
-  if (!status) return 'Under Review';
-  const normalized = status.toLowerCase().trim().replace(/\s+/g, ' ');
-  // Check for self-funded first (before regular funded)
-  if ((normalized.includes('self') && normalized.includes('funded')) ||
-      normalized === 'self-funded' ||
-      normalized === 'self funded' ||
-      (normalized.includes('art') && normalized.includes('no') && normalized.includes('grant'))) {
-    return 'Self-funded';
-  }
-  if (normalized.includes('not') && normalized.includes('funded')) return 'Not Funded';
-  if (normalized.includes('funded') && !normalized.includes('not')) return 'Funded';
-  if (normalized.includes('review') || normalized.includes('under')) return 'Under Review';
-  return 'Under Review';
 }

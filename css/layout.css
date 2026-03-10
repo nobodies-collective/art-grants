@@ -118,10 +118,6 @@ h1 {
   font-size: var(--font-size);
 }
 
-.status-filters {
-  display: contents;
-}
-
 .year-filters {
   display: contents;
 }
@@ -156,31 +152,6 @@ h1 {
 }
 
 .search-control input:focus {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
-}
-
-.controls .status-chip.status {
-  min-height: 0;
-  min-width: 0;
-  padding: 0;
-  border: none;
-}
-
-.controls .status-chip.status:not(.is-active) {
-  opacity: 0.4;
-}
-
-.status-chip.is-active {
-  background: var(--text);
-  color: var(--bg);
-}
-
-.status-chip:not(.is-active) {
-  opacity: 0.4;
-}
-
-.status-chip:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
