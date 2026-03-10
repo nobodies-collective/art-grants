@@ -9,16 +9,20 @@
  *   "<slug>"            — per-project chat tabs (auto-created, hidden)
  *
  * Form Responses tab layout:
- *   Columns A–T: form data (Timestamp, Email address, Year, Category,
- *     Title, Name, Artist name, Email, Description, Image, Technical details,
- *     Co-creation, Sound, Safety, Strike, Power requirements, Budget,
- *     Space requirements, Location requirements, Team)
- *   Column U: Slug               (auto-generated from Title)
- *   Column V: Artist Passphrase  (auto-generated, 6 chars)
- *   Column W: Status             (defaults to "Under Review")
- *   Column X: Liaison            (manual — liaison name)
- *   Column Y: Liaison Email      (manual — for notifications)
- *   Column Z: Liaison Passphrase (auto-generated, 6 chars)
+ *   Columns A–AG: form data (Timestamp, Year, Category, Title, Name, About,
+ *     Description, Scale & Footprint, Sound, Support Needed,
+ *     Total Project Budget (EUR), Early Entry, Other Funding, Budget,
+ *     Summary, Materials, Engineering & structure, Safety & Risk Management,
+ *     Build Transport & Strike, Placement Preferences, Technology, Power,
+ *     Experience & Interaction, Grant Request (EUR), Documents, Team,
+ *     Sex-positive, Type)
+ *   Column AI: Slug               (auto-generated from Title)
+ *   Column AJ: Passphrase Artist  (auto-generated, 6 chars)
+ *   Column AK: Passphrase Liaison (auto-generated, 6 chars)
+ *   Column AL: Liaison            (manual — liaison name)
+ *   Column AM: Liaison Email      (manual — for notifications)
+ *   Column AN: Status             (defaults to "Under Review")
+ *   Column AO: Messaging On       (TRUE/FALSE)
  *
  * SETUP:
  * 1. Paste this into Extensions → Apps Script on the Form Sheet
@@ -31,9 +35,9 @@
 
 // ─── Configuration ────────────────────────────────────────────────────
 
-var FORM_TAB_NAME = 'Responses';
+var FORM_TAB_NAME = 'Form responses 1';
 var SITE_URL = 'https://nobodies-collective.github.io/art-grants';
-var ADMIN_HEADERS = ['Slug', 'Passphrase Artist', 'Passphrase Liaison', 'Liaison', 'Liaison Email', 'Status'];
+var ADMIN_HEADERS = ['Year', 'Slug', 'Passphrase Artist', 'Passphrase Liaison', 'Liaison', 'Liaison Email', 'Status', 'Messaging On'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -99,10 +103,12 @@ function onFormSubmit(e) {
 
     var titleIdx = findHeaderIndex(headers, ['title']);
     var emailIdx = findHeaderIndex(headers, ['email']);
+    var yearIdx = findHeaderIndex(headers, ['year']);
     var slugIdx = findHeaderIndex(headers, ['slug']);
     var artistPassIdx = findHeaderIndex(headers, ['artist passphrase', 'passphrase artist', 'passphrase artiste']);
     var statusIdx = findHeaderIndex(headers, ['status']);
     var liaisonPassIdx = findHeaderIndex(headers, ['liaison passphrase', 'passphrase liaison']);
+    var messagingOnIdx = findHeaderIndex(headers, ['messaging on']);
 
     if (titleIdx === -1 || slugIdx === -1) return;
     if (artistPassIdx === -1 || liaisonPassIdx === -1) {
@@ -113,6 +119,13 @@ function onFormSubmit(e) {
     var title = sheet.getRange(row, titleIdx + 1).getValue().toString().trim();
     if (!title) return;
 
+    // Auto-set Year from Timestamp
+    if (yearIdx !== -1) {
+      var timestamp = sheet.getRange(row, 1).getValue();
+      var year = timestamp instanceof Date ? timestamp.getFullYear().toString() : new Date().getFullYear().toString();
+      sheet.getRange(row, yearIdx + 1).setValue(year);
+    }
+
     var email = emailIdx !== -1 ? sheet.getRange(row, emailIdx + 1).getValue().toString().trim() : '';
     var slug = generateSlug(title);
     var artistPass = generatePassphrase();
@@ -122,16 +135,20 @@ function onFormSubmit(e) {
     sheet.getRange(row, artistPassIdx + 1).setValue(artistPass);
     sheet.getRange(row, statusIdx + 1).setValue('Under Review');
     sheet.getRange(row, liaisonPassIdx + 1).setValue(liaisonPass);
+    if (messagingOnIdx !== -1) {
+      sheet.getRange(row, messagingOnIdx + 1).setValue('TRUE');
+    }
 
     if (email) {
       try {
         MailApp.sendEmail({
           to: email,
+          noReply: true,
           subject: 'Your Art Grant Discussion Passphrase',
           htmlBody:
             '<p>Your proposal <strong>' + escapeHtmlGS(title) + '</strong> has been received.</p>' +
             '<p>Use this link to join the project discussion:</p>' +
-            '<p><a href="' + SITE_URL + '/2026/' + slug + '?code=' + artistPass + '">Open discussion</a></p>' +
+            '<p><a href="' + SITE_URL + '/' + (yearIdx !== -1 ? sheet.getRange(row, yearIdx + 1).getValue() : new Date().getFullYear()) + '/' + slug + '?code=' + artistPass + '">Open discussion</a></p>' +
             '<p style="font-size:0.9em;color:#888">Or enter this passphrase manually: <code>' + escapeHtmlGS(artistPass) + '</code></p>',
         });
       } catch (mailErr) {
@@ -464,6 +481,7 @@ function notifyParticipants(project, senderEmail, senderRole, message) {
       try {
         MailApp.sendEmail({
           to: unique[k],
+          noReply: true,
           subject: 'New message in "' + prettyProject + '" — Art Grants',
           htmlBody:
             '<p><strong>' + escapeHtmlGS(senderRole) + '</strong> wrote in <strong>' + escapeHtmlGS(prettyProject) + '</strong>:</p>' +

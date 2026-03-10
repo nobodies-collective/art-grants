@@ -213,9 +213,9 @@ function applyFiltersAndRender() {
         proposal.name || '',
         proposal.category || '',
         proposal.description || '',
-        proposal.technicalDetails || '',
-        proposal.spaceRequirements || '',
-        proposal.locationRequirements || '',
+        proposal.about || '',
+        proposal.summary || '',
+        proposal.materials || '',
         proposal.team || '',
       ]
         .join(' ')
@@ -422,15 +422,29 @@ function renderProposals() {
 
 function buildDetailSections(proposal) {
   const sections = [
-    { label: 'Technical Details', value: proposal.technicalDetails },
-    { label: 'Space Requirements', value: proposal.spaceRequirements },
-    { label: 'Location Requirements', value: proposal.locationRequirements },
-    { label: 'Power Requirements', value: proposal.powerRequirements },
+    { label: 'About', value: proposal.about },
+    { label: 'Summary', value: proposal.summary },
+    { label: 'Experience & Interaction', value: proposal.experienceInteraction },
+    { label: 'Type', value: proposal.type },
+    { label: 'Sex-positive', value: proposal.sexPositive },
+    { label: 'Scale & Footprint', value: proposal.scaleFootprint },
+    { label: 'Materials', value: proposal.materials },
+    { label: 'Engineering & Structure', value: proposal.engineering },
+    { label: 'Build, Transport & Strike', value: proposal.buildTransportStrike },
+    { label: 'Placement Preferences', value: proposal.placementPreferences },
+    { label: 'Technology', value: proposal.technology },
+    { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
-    { label: 'Safety', value: proposal.safety },
-    { label: 'Strike', value: proposal.strike },
-    { label: 'Co-creation', value: proposal.coCreation },
+    { label: 'Early Entry', value: proposal.earlyEntry },
+    { label: 'Safety & Risk Management', value: proposal.safety },
+    { label: 'Support Needed', value: proposal.supportNeeded },
+    { label: 'Total Project Budget', value: proposal.totalBudget },
+    { label: 'Grant Request (EUR)', value: proposal.grantRequest },
+    { label: 'Other Funding', value: proposal.otherFunding },
+    { label: 'Budget', value: proposal.budget },
+    { label: 'Documents', value: proposal.documents },
     { label: 'Team', value: proposal.team },
+    { label: 'Comments', value: proposal.comments },
   ];
 
   return sections
