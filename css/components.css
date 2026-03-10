@@ -219,6 +219,39 @@
   padding: 0;
 }
 
+.detail-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-image {
+  flex-shrink: 0;
+}
+
+.detail-text {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .detail-layout {
+    flex-direction: row;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .detail-image {
+    width: 45%;
+    max-width: 500px;
+    position: sticky;
+    top: 1rem;
+  }
+
+  .detail-image .cover-image {
+    border-radius: 6px;
+  }
+}
+
 .proposal-card.modal-view .cover-image {
   position: static;
   width: 100%;

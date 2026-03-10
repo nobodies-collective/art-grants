@@ -511,13 +511,17 @@ function createProposalCard(
 
   if (showAllDetails) {
     card.innerHTML = `
-        ${imageHTML}
-        ${headerHTML}
-        <div class="card-body">
-            <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
-            ${detailsHTML}
+        <div class="detail-layout">
+            ${imageHTML ? `<div class="detail-image">${imageHTML}</div>` : ''}
+            <div class="detail-text">
+                ${headerHTML}
+                <div class="card-body">
+                    <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
+                    ${detailsHTML}
+                </div>
+                ${cardStatusHTML}
+            </div>
         </div>
-        ${cardStatusHTML}
     `;
   } else {
     card.innerHTML = `
