@@ -205,10 +205,10 @@
   margin: 0.6em 0 0.3em;
 }
 
-.md-content h1 { font-size: 1.3em; }
-.md-content h2 { font-size: 1.15em; }
-.md-content h3 { font-size: 1.05em; }
-.md-content h4 { font-size: 1em; }
+.md-content h1 { font-size: var(--font-size); }
+.md-content h2 { font-size: var(--font-size); }
+.md-content h3 { font-size: var(--font-size); }
+.md-content h4 { font-size: var(--font-size); }
 
 .md-content hr {
   border: none;
