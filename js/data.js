@@ -58,7 +58,8 @@ export function mapRowToProposal(row, headers, index = null) {
 
   const status = findColumn(row, headers, ['Status', 'status']);
 
-  const year = findColumn(row, headers, ['Year', 'year']);
+  const timestamp = findColumn(row, headers, ['Timestamp', 'timestamp']);
+  const year = deriveYear(timestamp);
   const slug = generateSlug(title);
   // Create unique key: always include index to ensure uniqueness even for duplicates
   const yearStr = (year || '').trim();
@@ -103,6 +104,22 @@ export function mapRowToProposal(row, headers, index = null) {
     messagingOn: findColumn(row, headers, ['Messaging On', 'messaging on', 'Messaging']).toLowerCase() === 'true',
     orderIndex: Math.random(),
   };
+}
+
+function deriveYear(timestamp) {
+  if (!timestamp) return '';
+  // Try parsing common formats: "DD/MM/YYYY HH:MM:SS" or "YYYY-MM-DD..."
+  const str = timestamp.toString().trim();
+  // DD/MM/YYYY format
+  const dmyMatch = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmyMatch) return dmyMatch[3];
+  // YYYY-MM-DD or YYYY/MM/DD format
+  const ymdMatch = str.match(/^(\d{4})[-/]/);
+  if (ymdMatch) return ymdMatch[1];
+  // Fallback: try Date parse
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) return d.getFullYear().toString();
+  return '';
 }
 
 function formatStatusClass(status) {
