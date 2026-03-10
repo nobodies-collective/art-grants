@@ -227,17 +227,6 @@ h1 {
   justify-content: center;
 }
 
-@media (min-width: 1100px) {
-  #proposals-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1500px) {
-  #proposals-list {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
 
 @media (max-width: 768px) {
   body {
