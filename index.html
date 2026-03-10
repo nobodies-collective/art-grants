@@ -52,24 +52,26 @@
               aria-label="Filter by year"
               id="year-filters-container">
             </div>
-            <div class="sort-control">
-              <label for="sort-select">Sort</label>
-              <select id="sort-select">
-                <option value="">Default order</option>
-                <option value="title-asc">Title A → Z</option>
-                <option value="title-desc">Title Z → A</option>
-                <option value="year-asc">Year ↑</option>
-                <option value="year-desc">Year ↓</option>
-                <option value="category">Category</option>
-              </select>
-            </div>
-            <div class="search-control">
-              <label for="search-input">Search</label>
-              <input
-                type="text"
-                id="search-input"
-                placeholder="Search..."
-                aria-label="Search proposals" />
+            <div class="sort-search-row">
+              <div class="sort-control">
+                <label for="sort-select">Sort</label>
+                <select id="sort-select">
+                  <option value="">Default order</option>
+                  <option value="title-asc">Title A → Z</option>
+                  <option value="title-desc">Title Z → A</option>
+                  <option value="year-asc">Year ↑</option>
+                  <option value="year-desc">Year ↓</option>
+                  <option value="category">Category</option>
+                </select>
+              </div>
+              <div class="search-control">
+                <label for="search-input">Search</label>
+                <input
+                  type="text"
+                  id="search-input"
+                  placeholder="Search..."
+                  aria-label="Search proposals" />
+              </div>
             </div>
           </section>
         </aside>
