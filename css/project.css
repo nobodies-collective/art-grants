@@ -69,7 +69,8 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .project-card {
+  .project-card,
+  .project-page .chat-section {
     grid-column: 1 / -1;
   }
 }
