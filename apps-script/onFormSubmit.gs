@@ -18,7 +18,7 @@
  * On first run, Google will ask you to authorize access.
  */
 
-var FORM_TAB_NAME = 'Form responses 1';
+var FORM_TAB_NAME = 'Art Grants';
 var ADMIN_HEADERS = ['Slug', 'Status', 'Messaging On'];
 var CHAT_SPREADSHEET_ID = '1YRh6qcl74SX_o-4lvlxzZpLBjiA8FUXn1nHb2EL3-6w';
 
