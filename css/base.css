@@ -20,7 +20,7 @@
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 400;
+  font-weight: 300;
 }
 
 button, input, select, textarea {
@@ -33,6 +33,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-size: var(--font-size);
+  font-weight: 300;
   line-height: 1.5;
   letter-spacing: 0.01em;
   padding: var(--space);

@@ -465,10 +465,20 @@ function createProposalCard(
     ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">`
     : '';
 
+  const galleryHTML = proposal.images && proposal.images.length > 1
+    ? `<div class="detail-gallery">${proposal.images.map((url, i) =>
+        `<img class="gallery-image" src="${url}" alt="${escapeHtml(proposal.title)} ${i + 1}" loading="lazy" decoding="async">`
+      ).join('')}</div>`
+    : '';
+
   if (showAllDetails) {
+    const detailImageHTML = proposal.images && proposal.images.length > 1
+      ? galleryHTML
+      : (imageHTML ? `<div class="detail-image">${imageHTML}</div>` : '');
+
     card.innerHTML = `
         <div class="detail-layout">
-            ${imageHTML ? `<div class="detail-image">${imageHTML}</div>` : ''}
+            ${detailImageHTML}
             <div class="detail-text">
                 ${headerHTML}
                 <div class="card-body">

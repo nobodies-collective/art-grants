@@ -48,13 +48,14 @@ export async function fetchSpreadsheetData(prefetchPromise) {
 
 export function mapRowToProposal(row, headers, index = null) {
   const title = findColumn(row, headers, ['Title', 'title']) || 'Untitled Proposal';
-  let imageUrl = findColumn(row, headers, ['Image', 'image']) || '';
-  imageUrl = imageUrl.trim();
+  const rawImages = findColumn(row, headers, ['Image', 'image', 'Images', 'images']) || '';
+  const images = rawImages.split(/[,\n]+/).map(u => u.trim()).filter(Boolean);
 
-  if (!imageUrl) {
+  if (!images.length) {
     const encodedTitle = encodeURIComponent(title);
-    imageUrl = `${PLACEHOLDER_IMAGE_BASE}?q=${encodedTitle}&w=800&h=450`;
+    images.push(`${PLACEHOLDER_IMAGE_BASE}?q=${encodedTitle}&w=800&h=450`);
   }
+  const imageUrl = images[0];
 
   const status = findColumn(row, headers, ['Status', 'status']);
 
@@ -98,6 +99,7 @@ export function mapRowToProposal(row, headers, index = null) {
     type: findColumn(row, headers, ['Type', 'type']),
     comments: findColumn(row, headers, ['Comments', 'comments']),
     coverImage: imageUrl,
+    images,
     statusLabel: formatStatusLabel(status),
     statusClass: formatStatusClass(status),
     statusKey: formatStatusClass(status),

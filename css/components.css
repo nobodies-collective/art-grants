@@ -109,7 +109,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 400;
+  font-weight: 300;
   letter-spacing: 0.02em;
 }
 
@@ -121,7 +121,7 @@
   min-height: 1.5rem;
   min-width: 2.5rem;
   font-size: inherit;
-  font-weight: 400;
+  font-weight: 300;
   white-space: nowrap;
   letter-spacing: 0;
   text-transform: uppercase;
@@ -167,7 +167,7 @@
   display: inline-block;
   padding: 0.25rem 0.55rem;
   font-size: var(--font-size);
-  font-weight: 400;
+  font-weight: 300;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -219,6 +219,25 @@
   padding: 0;
 }
 
+.detail-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.detail-gallery .gallery-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 2px;
+  aspect-ratio: 4 / 3;
+}
+
+.detail-gallery .gallery-image:first-child:nth-last-child(1) {
+  grid-column: 1 / -1;
+}
+
 .detail-layout {
   display: flex;
   flex-direction: column;
@@ -240,7 +259,8 @@
     align-items: flex-start;
   }
 
-  .detail-image {
+  .detail-image,
+  .detail-gallery {
     width: 45%;
     max-width: 500px;
     position: sticky;
@@ -311,7 +331,7 @@
   letter-spacing: 0;
   margin-bottom: 0.5rem;
   color: var(--text);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .detail-section p {
@@ -350,7 +370,7 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--text);
-  font-weight: 400;
+  font-weight: 300;
   background: var(--bg);
 }
 
@@ -359,7 +379,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-weight: 400;
+  font-weight: 300;
 }
 
 .proposal-table .description-cell {

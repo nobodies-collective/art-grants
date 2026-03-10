@@ -9,7 +9,7 @@
   font-size: var(--font-size);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-weight: 400;
+  font-weight: 300;
   margin-bottom: 0.75rem;
   color: var(--text);
 }
@@ -66,7 +66,7 @@
 
 .chat-message-role {
   font-size: var(--font-size);
-  font-weight: 400;
+  font-weight: 300;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding: 0.1rem 0.35rem;
@@ -146,7 +146,7 @@
 }
 
 .md-content strong {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .md-content a {
@@ -201,7 +201,7 @@
 .md-content h2,
 .md-content h3,
 .md-content h4 {
-  font-weight: 600;
+  font-weight: 500;
   margin: 0.6em 0 0.3em;
 }
 
@@ -298,7 +298,7 @@
 .chat-send {
   font-family: inherit;
   font-size: var(--font-size);
-  font-weight: 400;
+  font-weight: 300;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   padding: 0.45rem 0.75rem;
