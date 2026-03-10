@@ -432,7 +432,6 @@ function buildDetailSections(proposal) {
     { label: 'Technology', value: proposal.technology },
     { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
-    { label: 'Early Entry', value: proposal.earlyEntry },
     { label: 'Safety & Risk Management', value: proposal.safety },
     { label: 'Support Needed', value: proposal.supportNeeded },
     { label: 'Total Project Budget', value: proposal.totalBudget },
