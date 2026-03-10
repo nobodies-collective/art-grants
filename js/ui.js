@@ -434,11 +434,8 @@ function buildDetailSections(proposal) {
     { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
     { label: 'Safety & Risk Management', value: proposal.safety },
-    { label: 'Total Project Budget', value: proposal.totalBudget },
     { label: 'Grant Request (EUR)', value: proposal.grantRequest },
     { label: 'Other Funding', value: proposal.otherFunding },
-    { label: 'Budget', value: proposal.budget },
-    { label: 'Documents', value: proposal.documents },
     { label: 'Comments', value: proposal.comments },
   ];
 
