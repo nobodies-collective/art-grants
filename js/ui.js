@@ -422,11 +422,8 @@ function renderProposals() {
 
 function buildDetailSections(proposal) {
   const sections = [
-    { label: 'About', value: proposal.about },
     { label: 'Summary', value: proposal.summary },
     { label: 'Experience & Interaction', value: proposal.experienceInteraction },
-    { label: 'Type', value: proposal.type },
-    { label: 'Sex-positive', value: proposal.sexPositive },
     { label: 'Scale & Footprint', value: proposal.scaleFootprint },
     { label: 'Materials', value: proposal.materials },
     { label: 'Engineering & Structure', value: proposal.engineering },
@@ -614,6 +611,15 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   const header = document.createElement('header');
   header.className = 'project-header';
 
+  const backLink = document.createElement('a');
+  backLink.className = 'back-link';
+  backLink.href = baseUrl();
+  backLink.textContent = '← Art Grants';
+  backLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeProjectPage(page);
+  });
+
   const titleEl = document.createElement('h1');
   titleEl.className = 'project-title';
   titleEl.textContent = proposal.title || 'Untitled Proposal';
@@ -628,7 +634,7 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   parts.push(`<span class="status ${proposal.statusClass}">${escapeHtml(proposal.statusLabel)}</span>`);
   meta.innerHTML = parts.join(' · ');
 
-  header.append(titleEl, meta);
+  header.append(backLink, titleEl, meta);
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,

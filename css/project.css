@@ -10,6 +10,19 @@
   margin-bottom: 1.5rem;
 }
 
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: var(--font-size);
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0.6;
+}
+
+.back-link:hover {
+  opacity: 1;
+}
+
 .project-title {
   font-size: 1.5rem;
   font-weight: 400;

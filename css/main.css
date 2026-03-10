@@ -1,7 +1,7 @@
-@import url('./base.css');
-@import url('./layout.css');
-@import url('./components.css');
-@import url('./modal.css');
-@import url('./project.css');
-@import url('./chat.css');
-@import url('./print.css');
+@import url('./base.css?v=2');
+@import url('./layout.css?v=2');
+@import url('./components.css?v=2');
+@import url('./modal.css?v=2');
+@import url('./project.css?v=2');
+@import url('./chat.css?v=2');
+@import url('./print.css?v=2');
