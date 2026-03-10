@@ -79,7 +79,7 @@ h1 {
 }
 
 .intro p {
-  font-size: var(--font-size-small);
+  font-size: var(--font-size);
   line-height: 1.45;
   letter-spacing: 0.01em;
   color: var(--text);
@@ -115,7 +115,7 @@ h1 {
   grid-template-columns: repeat(8, 1fr);
   grid-auto-rows: 1fr;
   gap: 0.5rem;
-  font-size: var(--font-size-small);
+  font-size: var(--font-size);
 }
 
 .status-filters {
