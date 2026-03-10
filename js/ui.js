@@ -510,7 +510,10 @@ function createProposalCard(
             <div class="detail-text">
                 ${headerHTML}
                 <div class="card-body">
-                    <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
+                    <div class="detail-section">
+                        <h3>Concept</h3>
+                        <div class="summary">${formatText(proposal.description || 'No description provided.')}</div>
+                    </div>
                     ${detailsHTML}
                 </div>
                 ${cardStatusHTML}
