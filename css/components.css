@@ -12,7 +12,6 @@
 .proposal-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-top-width: 3px;
   padding: 0;
   display: flex;
   flex-direction: row;
@@ -54,22 +53,6 @@
 
 #proposals-list.cards-loaded .proposal-card.fade-in-on-load {
   animation: cardsFadeIn 0.6s ease forwards;
-}
-
-.proposal-card[data-status="funded"] {
-  border-top-color: #00c853;
-}
-
-.proposal-card[data-status="not-funded"] {
-  border-top-color: #d50000;
-}
-
-.proposal-card[data-status="under-review"] {
-  border-top-color: #ffab00;
-}
-
-.proposal-card[data-status="self-funded"] {
-  border-top-color: #2196f3;
 }
 
 .proposal-card.card-clickable {

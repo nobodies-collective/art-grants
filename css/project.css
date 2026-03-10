@@ -54,26 +54,6 @@
   border-radius: 2px;
 }
 
-.project-page[data-status="funded"] .project-card {
-  border-top-color: #00c853;
-  border-top-width: 3px;
-}
-
-.project-page[data-status="not-funded"] .project-card {
-  border-top-color: #d50000;
-  border-top-width: 3px;
-}
-
-.project-page[data-status="under-review"] .project-card {
-  border-top-color: #ffab00;
-  border-top-width: 3px;
-}
-
-.project-page[data-status="self-funded"] .project-card {
-  border-top-color: #2196f3;
-  border-top-width: 3px;
-}
-
 .project-page .chat-section {
   border: 1px solid var(--border);
   border-radius: 2px;
