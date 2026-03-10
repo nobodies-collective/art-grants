@@ -424,7 +424,7 @@ function buildDetailSections(proposal) {
   const sections = [
     { label: 'Summary', value: proposal.summary },
     { label: 'Team', value: proposal.team },
-    { label: 'Experience & Interaction', value: proposal.experienceInteraction },
+    { label: 'Experience & Interaction', value: proposal.experienceInteraction, dividerAfter: true },
     { label: 'Scale & Footprint', value: proposal.scaleFootprint },
     { label: 'Materials', value: proposal.materials },
     { label: 'Engineering & Structure', value: proposal.engineering },
@@ -434,7 +434,7 @@ function buildDetailSections(proposal) {
     { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
     { label: 'Safety & Risk Management', value: proposal.safety },
-    { label: 'Grant Request (EUR)', value: proposal.grantRequest },
+    { label: 'Grant Request (EUR)', value: proposal.grantRequest, dividerBefore: true },
     { label: 'Other Funding', value: proposal.otherFunding },
     { label: 'Comments', value: proposal.comments },
   ];
@@ -443,10 +443,12 @@ function buildDetailSections(proposal) {
     .filter((section) => section.value)
     .map(
       (section) => `
+        ${section.dividerBefore ? '<hr>' : ''}
         <div class="detail-section">
           <h3>${section.label}</h3>
           <p>${formatText(section.value)}</p>
         </div>
+        ${section.dividerAfter ? '<hr>' : ''}
       `
     )
     .join('');
