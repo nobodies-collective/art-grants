@@ -84,6 +84,17 @@
   max-height: 500px;
 }
 
+@media (min-width: 1400px) {
+  .project-body {
+    grid-template-columns: 1fr 350px;
+  }
+
+  .project-page .chat-section {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .project-title {
     font-size: 1.2rem;
