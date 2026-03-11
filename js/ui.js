@@ -413,7 +413,7 @@ function buildDetailSections(proposal) {
     { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
     { label: 'Safety & Risk Management', value: proposal.safety },
-    { label: 'Grant Request (EUR)', value: proposal.grantRequest, dividerBefore: true },
+    { label: 'Grant Request', value: proposal.grantRequest ? `\u20ac${proposal.grantRequest}` : '', dividerBefore: true },
     { label: 'Other Funding', value: proposal.otherFunding },
     { label: 'Comments', value: proposal.comments },
   ];
@@ -554,7 +554,28 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   if (proposal.category) parts.push(`<span class="category-badge">${escapeHtml(proposal.category)}</span>`);
   meta.innerHTML = parts.join(' · ');
 
-  header.append(backLink, titleEl, meta);
+  // Next project link
+  const currentIndex = state.filteredList.findIndex(p => p.uniqueKey === proposal.uniqueKey);
+  const nextProposal = currentIndex !== -1 ? state.filteredList[(currentIndex + 1) % state.filteredList.length] : null;
+
+  const headerTop = document.createElement('div');
+  headerTop.className = 'project-header-top';
+  headerTop.appendChild(backLink);
+  if (nextProposal && nextProposal.uniqueKey !== proposal.uniqueKey) {
+    const nextLink = document.createElement('a');
+    nextLink.className = 'next-link';
+    nextLink.href = proposalUrl(nextProposal);
+    nextLink.textContent = 'Next →';
+    nextLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      page.remove();
+      state.currentProjectPage = null;
+      openProposalPage(nextProposal);
+    });
+    headerTop.appendChild(nextLink);
+  }
+
+  header.append(headerTop, titleEl, meta);
 
   const card = createProposalCard(proposal, {
     showAllDetails: true,
