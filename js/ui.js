@@ -204,8 +204,8 @@ function applyFiltersAndRender() {
         proposal.name || '',
         proposal.category || '',
         proposal.description || '',
-        proposal.about || '',
         proposal.summary || '',
+        proposal.tags || '',
         proposal.materials || '',
         proposal.team || '',
       ]
@@ -402,6 +402,7 @@ function buildDetailSections(proposal) {
   const sections = [
     { label: 'Summary', value: proposal.summary },
     { label: 'Team', value: proposal.team },
+    { label: 'Tags', value: proposal.tags },
     { label: 'Experience & Interaction', value: proposal.experienceInteraction, dividerAfter: true },
     { label: 'Scale & Footprint', value: proposal.scaleFootprint },
     { label: 'Materials', value: proposal.materials },

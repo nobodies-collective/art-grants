@@ -48,12 +48,27 @@ export async function fetchSpreadsheetData(prefetchPromise) {
 
 export function mapRowToProposal(row, headers, index = null) {
   const title = findColumn(row, headers, ['Title', 'title']) || 'Untitled Proposal';
-  const rawImages = findColumn(row, headers, ['Image', 'image', 'Images', 'images']) || '';
-  const images = rawImages.split(/[,\n]+/).map(u => u.trim()).filter(Boolean);
+
+  // Image priority: Hero image first, then other uploaded images, then placeholder
+  const heroImage = findColumn(row, headers, ['Hero image', 'hero image', 'Cover image', 'cover image']) || '';
+  const rawFiles = findColumn(row, headers, ['Files', 'files']) || '';
+  const rawImage = findColumn(row, headers, ['Image', 'image', 'Images', 'images']) || '';
+
+  const images = [];
+  // Hero/cover image comes first
+  if (heroImage) {
+    heroImage.split(/[,\n]+/).map(u => u.trim()).filter(Boolean).forEach(u => images.push(u));
+  }
+  // Then other uploaded files/images
+  [rawFiles, rawImage].forEach(raw => {
+    raw.split(/[,\n]+/).map(u => u.trim()).filter(Boolean).forEach(u => {
+      if (!images.includes(u)) images.push(u);
+    });
+  });
 
   if (!images.length) {
     const encodedTitle = encodeURIComponent(title);
-    images.push(`${PLACEHOLDER_IMAGE_BASE}?q=${encodedTitle}&w=800&h=450`);
+    images.push(`${PLACEHOLDER_IMAGE_BASE}?text=${encodedTitle}&font=lato`);
   }
   const imageUrl = images[0];
 
@@ -72,7 +87,6 @@ export function mapRowToProposal(row, headers, index = null) {
     year,
     category: findColumn(row, headers, ['Category', 'category']),
     name: findColumn(row, headers, ['Artist name', 'artist name', 'Name', 'name', 'Artist', 'artist']),
-    about: findColumn(row, headers, ['About', 'about']),
     description: findColumn(row, headers, ['Description', 'description']),
     scaleFootprint: findColumn(row, headers, ['Scale & Footprint', 'Scale &amp; Footprint']),
     sound: findColumn(row, headers, ['Sound', 'sound']),
@@ -80,7 +94,8 @@ export function mapRowToProposal(row, headers, index = null) {
     summary: findColumn(row, headers, ['Summary', 'summary']),
     materials: findColumn(row, headers, ['Materials', 'materials']),
     engineering: findColumn(row, headers, ['Engineering & structure', 'Engineering &amp; structure']),
-    safety: findColumn(row, headers, ['Safety & Risk Management', 'Safety &amp; Risk Management']),
+    safety: findColumn(row, headers, ['Risk & Safety Management', 'Risk &amp; Safety Management', 'Safety & Risk Management', 'Safety &amp; Risk Management']),
+    tags: findColumn(row, headers, ['Tags', 'tags']),
     buildTransportStrike: findColumn(row, headers, ['Build, Transport & Strike', 'Build, Transport &amp; Strike']),
     placementPreferences: findColumn(row, headers, ['Placement Preferences', 'placement preferences']),
     technology: findColumn(row, headers, ['Technology', 'technology']),
