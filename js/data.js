@@ -46,6 +46,12 @@ export async function fetchSpreadsheetData(prefetchPromise) {
   return parseCSV(csvText);
 }
 
+function driveToDirectUrl(url) {
+  const match = url.match(/drive\.google\.com\/(?:open\?id=|file\/d\/)([a-zA-Z0-9_-]+)/);
+  if (match) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+  return url;
+}
+
 export function mapRowToProposal(row, headers, index = null) {
   const title = findColumn(row, headers, ['Title', 'title']) || 'Untitled Proposal';
 
@@ -57,12 +63,13 @@ export function mapRowToProposal(row, headers, index = null) {
   const images = [];
   // Hero/cover image comes first
   if (heroImage) {
-    heroImage.split(/[,\n]+/).map(u => u.trim()).filter(Boolean).forEach(u => images.push(u));
+    heroImage.split(/[,\n]+/).map(u => u.trim()).filter(Boolean).forEach(u => images.push(driveToDirectUrl(u)));
   }
   // Then other uploaded files/images
   [rawFiles, rawImage].forEach(raw => {
     raw.split(/[,\n]+/).map(u => u.trim()).filter(Boolean).forEach(u => {
-      if (!images.includes(u)) images.push(u);
+      const url = driveToDirectUrl(u);
+      if (!images.includes(url)) images.push(url);
     });
   });
 
