@@ -105,11 +105,7 @@ function sendNotifications(project, authorName, message) {
       var subject = 'New message on "' + title + '"';
       var body = authorName + ' wrote:\n\n' + message + '\n\n---\nView project: ' + projectUrl;
 
-      MailApp.sendEmail({
-        to: emails.join(','),
-        subject: subject,
-        body: body,
-      });
+      GmailApp.sendEmail(emails.join(','), subject, body);
 
       break;
     }
