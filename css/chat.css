@@ -47,14 +47,6 @@
   border-left: 3px solid var(--border);
 }
 
-.chat-message:has(.chat-role-artist) {
-  border-left-color: #ffab00;
-}
-
-.chat-message:has(.chat-role-liaison),
-.chat-message:has(.chat-role-admin) {
-  border-left-color: #2196f3;
-}
 
 .chat-message-header {
   display: flex;
@@ -64,26 +56,10 @@
   flex-wrap: wrap;
 }
 
-.chat-message-role {
+.chat-message-author {
   font-size: var(--font-size);
-  font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 0.1rem 0.35rem;
-  border-radius: 2px;
+  font-weight: 500;
   color: var(--text);
-  background: var(--border);
-}
-
-.chat-role-artist .chat-message-role {
-  background: rgba(255, 171, 0, 0.15);
-  color: #ffab00;
-}
-
-.chat-role-liaison .chat-message-role,
-.chat-role-admin .chat-message-role {
-  background: rgba(33, 150, 243, 0.15);
-  color: #2196f3;
 }
 
 .chat-message-time {
@@ -256,7 +232,7 @@
   flex: 1;
 }
 
-.chat-code {
+.chat-name {
   flex: 1;
 }
 

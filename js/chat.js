@@ -15,14 +15,14 @@ async function fetchChatMessages(slug) {
   }
 }
 
-async function postChatMessage(slug, code, message) {
+async function postChatMessage(slug, name, message) {
   if (!CHAT_SCRIPT_URL) {
     throw new Error('Chat posting is not configured. Set CHAT_SCRIPT_URL in constants.js.');
   }
   const params = new URLSearchParams({
     action: 'post',
     project: slug,
-    code,
+    name,
     message,
   });
   const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
@@ -32,12 +32,12 @@ async function postChatMessage(slug, code, message) {
   return data;
 }
 
-async function editChatMessage(slug, code, messageId, newMessage) {
+async function editChatMessage(slug, name, messageId, newMessage) {
   if (!CHAT_SCRIPT_URL) throw new Error('Chat not configured.');
   const params = new URLSearchParams({
     action: 'edit',
     project: slug,
-    code,
+    name,
     id: String(messageId),
     message: newMessage,
   });
@@ -48,12 +48,12 @@ async function editChatMessage(slug, code, messageId, newMessage) {
   return data;
 }
 
-async function deleteChatMessage(slug, code, messageId) {
+async function deleteChatMessage(slug, name, messageId) {
   if (!CHAT_SCRIPT_URL) throw new Error('Chat not configured.');
   const params = new URLSearchParams({
     action: 'delete',
     project: slug,
-    code,
+    name,
     id: String(messageId),
   });
   const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
@@ -61,40 +61,6 @@ async function deleteChatMessage(slug, code, messageId) {
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data;
-}
-
-async function verifyPassphrase(slug, code) {
-  if (!CHAT_SCRIPT_URL) return null;
-  try {
-    const params = new URLSearchParams({
-      action: 'verify',
-      project: slug,
-      code,
-    });
-    const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.error || !data.ok) return null;
-    return data.role;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Extract ?code= from URL, save to localStorage, clean URL.
- */
-function extractCodeFromURL(slug) {
-  const url = new URL(window.location.href);
-  const code = url.searchParams.get('code');
-  if (code) {
-    localStorage.setItem('chat-code-' + slug, code);
-    // Clean the code from the URL
-    url.searchParams.delete('code');
-    history.replaceState(null, '', url.pathname + url.search + url.hash);
-    return code;
-  }
-  return null;
 }
 
 function formatTimestamp(raw) {
@@ -129,26 +95,7 @@ export function createChatSection(proposal) {
   container.appendChild(messagesEl);
 
   const slug = proposal.slug;
-
-  // Extract code from URL if present
-  const urlCode = extractCodeFromURL(slug);
-  const savedCode = localStorage.getItem('chat-code-' + slug) || '';
-  const code = urlCode || savedCode;
-
-  // If we have a code (from URL or localStorage), verify it to get the role
-  if (code && CHAT_SCRIPT_URL) {
-    verifyPassphrase(slug, code).then((role) => {
-      if (role) {
-        localStorage.setItem('chat-code-' + slug, code);
-        localStorage.setItem('chat-role-' + slug, role);
-        // Hide passphrase input if visible
-        const codeInput = container.querySelector('.chat-code');
-        if (codeInput) codeInput.closest('.chat-bottom').querySelector('.chat-code').style.display = 'none';
-        // Re-render messages with edit/delete buttons
-        refreshMessages();
-      }
-    });
-  }
+  const savedName = localStorage.getItem('chat-name') || '';
 
   function refreshMessages() {
     fetchChatMessages(slug).then((messages) => {
@@ -171,8 +118,6 @@ export function createChatSection(proposal) {
     const savedDraft = localStorage.getItem(draftKey) || '';
     let debounceTimer = null;
 
-    const hasCode = !!code;
-
     const form = document.createElement('form');
     form.className = 'chat-form';
     form.innerHTML = `
@@ -181,13 +126,14 @@ export function createChatSection(proposal) {
         <textarea id="chat-msg-${slug}" name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
       </div>
       <div class="chat-bottom">
-        <label for="chat-code-${slug}" class="visually-hidden">Passphrase</label>
-        <input type="text" id="chat-code-${slug}" name="code" class="chat-input chat-code" placeholder="Passphrase" required value="${escapeHtml(code)}" ${hasCode ? 'style="display:none"' : ''} />
+        <label for="chat-name-${slug}" class="visually-hidden">Your name</label>
+        <input type="text" id="chat-name-${slug}" name="name" class="chat-input chat-name" placeholder="Your name" required value="${escapeHtml(savedName)}" />
         <button type="submit" class="chat-send">Send</button>
       </div>
     `;
 
     const textarea = form.querySelector('.chat-textarea');
+    const nameInput = form.querySelector('.chat-name');
 
     // Restore draft
     if (savedDraft) {
@@ -205,6 +151,11 @@ export function createChatSection(proposal) {
       debounceTimer = setTimeout(saveDraft, 300);
     });
 
+    // Save name on change
+    nameInput.addEventListener('input', () => {
+      localStorage.setItem('chat-name', nameInput.value.trim());
+    });
+
     // Ctrl/Cmd+Enter to send
     textarea.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -220,20 +171,16 @@ export function createChatSection(proposal) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.style.display = 'none';
-      const codeInput = form.querySelector('[name="code"]');
-      const btn = form.querySelector('.chat-send');
-      const codeVal = codeInput.value.trim();
+      const nameVal = nameInput.value.trim();
       const message = textarea.value.trim();
-      if (!codeVal || !message) return;
+      if (!nameVal || !message) return;
 
+      const btn = form.querySelector('.chat-send');
       btn.disabled = true;
       btn.textContent = 'Sending...';
       try {
-        const result = await postChatMessage(slug, codeVal, message);
-        localStorage.setItem('chat-code-' + slug, codeVal);
-        if (result.role) localStorage.setItem('chat-role-' + slug, result.role);
-        // Hide passphrase after successful auth
-        codeInput.style.display = 'none';
+        await postChatMessage(slug, nameVal, message);
+        localStorage.setItem('chat-name', nameVal);
         // Clear compose
         textarea.value = '';
         localStorage.removeItem(draftKey);
@@ -244,8 +191,6 @@ export function createChatSection(proposal) {
         console.error('Chat send error:', err);
         errorEl.textContent = err.message || 'Failed to send message. Please try again.';
         errorEl.style.display = '';
-        // Show passphrase field if auth failed
-        codeInput.style.display = '';
       } finally {
         btn.disabled = false;
         btn.textContent = 'Send';
@@ -262,12 +207,11 @@ function renderMessage(msg, slug, onRefresh) {
   const el = document.createElement('div');
   el.className = 'chat-message';
 
-  const role = (msg.role || 'Artist').trim();
-  const roleKey = role.toLowerCase().replace(/\s+/g, '-');
+  const author = (msg.author || 'Anonymous').trim();
 
-  // Check ownership: stored role must match message role
-  const savedRole = localStorage.getItem('chat-role-' + slug) || '';
-  const canModify = savedRole && savedRole === role;
+  // Check ownership: stored name must match message author
+  const savedName = localStorage.getItem('chat-name') || '';
+  const canModify = savedName && savedName === author;
 
   const actionsHTML = canModify ? `
     <span class="chat-message-actions">
@@ -277,8 +221,8 @@ function renderMessage(msg, slug, onRefresh) {
   ` : '';
 
   el.innerHTML = `
-    <div class="chat-message-header chat-role-${roleKey}">
-      <span class="chat-message-role">${escapeHtml(role)}</span>
+    <div class="chat-message-header">
+      <span class="chat-message-author">${escapeHtml(author)}</span>
       <span class="chat-message-time">${escapeHtml(formatTimestamp(msg.timestamp))}</span>
       ${actionsHTML}
     </div>
@@ -286,10 +230,8 @@ function renderMessage(msg, slug, onRefresh) {
   `;
 
   if (canModify) {
-    const savedCode = localStorage.getItem('chat-code-' + slug) || '';
-
     el.querySelector('.chat-edit-btn').addEventListener('click', () => {
-      enterEditMode(el, msg, slug, savedCode, onRefresh);
+      enterEditMode(el, msg, slug, savedName, onRefresh);
     });
 
     el.querySelector('.chat-delete-btn').addEventListener('click', async () => {
@@ -298,7 +240,7 @@ function renderMessage(msg, slug, onRefresh) {
       btn.disabled = true;
       btn.textContent = '...';
       try {
-        await deleteChatMessage(slug, savedCode, msg.id);
+        await deleteChatMessage(slug, savedName, msg.id);
         onRefresh();
       } catch (err) {
         alert('Failed to delete: ' + err.message);
@@ -311,7 +253,7 @@ function renderMessage(msg, slug, onRefresh) {
   return el;
 }
 
-function enterEditMode(el, msg, slug, code, onRefresh) {
+function enterEditMode(el, msg, slug, name, onRefresh) {
   const bodyEl = el.querySelector('.chat-message-body');
   const originalHTML = bodyEl.innerHTML;
 
@@ -351,7 +293,7 @@ function enterEditMode(el, msg, slug, code, onRefresh) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     try {
-      await editChatMessage(slug, code, msg.id, newText);
+      await editChatMessage(slug, name, msg.id, newText);
       onRefresh();
     } catch (err) {
       alert('Failed to save: ' + err.message);

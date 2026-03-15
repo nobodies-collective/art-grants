@@ -2,22 +2,11 @@
  * Google Apps Script — Chat backend for Art Grants
  *
  * This script lives on the CHAT spreadsheet (separate from form responses).
- * Passphrases and chat messages are stored here; form data stays public.
+ * Anyone can post messages using their name. Email notifications are sent
+ * to the artist and liaison(s) when a new message is posted.
  *
  * TABS:
- *   "_codes"   — passphrase lookup (Slug, Passphrase, Name, Role)
  *   "<slug>"   — per-project chat tabs (auto-created, hidden)
- *
- * _codes tab layout (columns A–D):
- *   Column A: Project slug (or * for admin/global access)
- *   Column B: Passphrase
- *   Column C: Display name (shown as message author)
- *   Column D: Role (Artist or Liaison)
- *
- * Example:
- *   *                    | admin-secret | Art Grants Committee | Liaison
- *   echoes-of-dust       | u5gv9f       | Jonas Johansson      | Artist
- *   echoes-of-dust       | dv2uhe       |                      | Liaison
  *
  * SETUP:
  * 1. Open the Chat spreadsheet in Google Sheets
@@ -32,6 +21,9 @@
 // ─── Configuration ────────────────────────────────────────────────────
 
 var SITE_URL = 'https://nobodies-collective.github.io/art-grants';
+var FORM_SPREADSHEET_ID = '1_C6spAHXZodFPOWUzI15-JB43rnFywM5hQo5kS9AMKw';
+var FORM_TAB_NAME = 'Art Grants';
+var NOTIFY_EMAIL = 'art@nobodies.team';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -53,24 +45,77 @@ function jsonResponse(data) {
   return output;
 }
 
-// ─── Authentication ───────────────────────────────────────────────────
-
-function verifyCode(ss, project, code) {
-  var codesTab = ss.getSheetByName('_codes');
-  if (!codesTab) return false;
-
-  var data = codesTab.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    var slug = (data[i][0] || '').toString().trim();
-    var passphrase = (data[i][1] || '').toString().trim();
-    var name = (data[i][2] || '').toString().trim();
-    var role = (data[i][3] || '').toString().trim();
-    if (passphrase === code) {
-      if (slug === '*') return { role: role || 'Liaison', name: name || 'Art Grants Committee' };
-      if (slug === project) return { role: role || 'Artist', name: name || 'Artist' };
+function findHeaderIdx(headers, candidates) {
+  for (var i = 0; i < headers.length; i++) {
+    var h = (headers[i] || '').toString().toLowerCase().trim();
+    for (var j = 0; j < candidates.length; j++) {
+      if (h === candidates[j].toLowerCase()) return i;
     }
   }
-  return false;
+  return -1;
+}
+
+// ─── Email notifications ─────────────────────────────────────────────
+
+function sendNotifications(project, authorName, message) {
+  try {
+    var formSS = SpreadsheetApp.openById(FORM_SPREADSHEET_ID);
+    var sheet = formSS.getSheetByName(FORM_TAB_NAME);
+    if (!sheet) return;
+
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var data = sheet.getDataRange().getValues();
+
+    var slugIdx = findHeaderIdx(headers, ['Slug', 'slug']);
+    var emailIdx = findHeaderIdx(headers, ['Email address', 'email address', 'Email Address']);
+    var titleIdx = findHeaderIdx(headers, ['Title', 'title']);
+    var timestampIdx = findHeaderIdx(headers, ['Timestamp', 'timestamp']);
+
+    if (slugIdx === -1) return;
+
+    for (var i = 1; i < data.length; i++) {
+      if ((data[i][slugIdx] || '').toString().trim() !== project) continue;
+
+      var title = titleIdx !== -1 ? (data[i][titleIdx] || project).toString() : project;
+
+      // Derive year for URL
+      var year = '';
+      if (timestampIdx !== -1 && data[i][timestampIdx]) {
+        var ts = data[i][timestampIdx];
+        if (ts instanceof Date) {
+          year = ts.getFullYear().toString();
+        } else {
+          var str = ts.toString().trim();
+          var dmyMatch = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+          if (dmyMatch) year = dmyMatch[3];
+        }
+      }
+
+      // Collect email addresses: artist + art@nobodies.team
+      var emails = [NOTIFY_EMAIL];
+
+      if (emailIdx !== -1 && data[i][emailIdx]) {
+        data[i][emailIdx].toString().split(',').forEach(function(e) {
+          var trimmed = e.trim();
+          if (trimmed && emails.indexOf(trimmed) === -1) emails.push(trimmed);
+        });
+      }
+
+      var projectUrl = SITE_URL + (year ? '/' + year : '') + '/' + project;
+      var subject = 'New message on "' + title + '"';
+      var body = authorName + ' wrote:\n\n' + message + '\n\n---\nView project: ' + projectUrl;
+
+      MailApp.sendEmail({
+        to: emails.join(','),
+        subject: subject,
+        body: body,
+      });
+
+      break;
+    }
+  } catch (err) {
+    Logger.log('sendNotifications error: ' + err.message);
+  }
 }
 
 // ─── Chat API ─────────────────────────────────────────────────────────
@@ -80,21 +125,17 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var action = (data.action || 'post').trim();
     var project = (data.project || '').trim();
-    var code = (data.code || '').trim();
+    var name = (data.name || '').trim();
 
-    if (!project || !code) {
-      return jsonResponse({ error: 'Missing required fields' });
+    if (!project) {
+      return jsonResponse({ error: 'Missing project' });
     }
 
     var ss = getSpreadsheet();
-    var auth = verifyCode(ss, project, code);
-    if (!auth) {
-      return jsonResponse({ error: 'Invalid passphrase' });
-    }
 
-    if (action === 'post') return handlePost(ss, project, auth, (data.message || '').trim());
-    if (action === 'edit') return handleEdit(ss, project, auth, parseInt(data.id, 10), (data.message || '').trim());
-    if (action === 'delete') return handleDelete(ss, project, auth, parseInt(data.id, 10));
+    if (action === 'post') return handlePost(ss, project, name, (data.message || '').trim());
+    if (action === 'edit') return handleEdit(ss, project, name, parseInt(data.id, 10), (data.message || '').trim());
+    if (action === 'delete') return handleDelete(ss, project, name, parseInt(data.id, 10));
 
     return jsonResponse({ error: 'Unknown action' });
   } catch (err) {
@@ -102,8 +143,9 @@ function doPost(e) {
   }
 }
 
-function handlePost(ss, project, auth, message) {
+function handlePost(ss, project, name, message) {
   if (!message) return jsonResponse({ error: 'Message is required' });
+  if (!name) return jsonResponse({ error: 'Name is required' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) {
@@ -113,13 +155,17 @@ function handlePost(ss, project, auth, message) {
     tab.hideSheet();
   }
 
-  tab.appendRow([new Date(), auth.name, auth.role, message]);
+  tab.appendRow([new Date(), name, '', message]);
 
-  return jsonResponse({ ok: true, role: auth.role });
+  // Send email notifications
+  sendNotifications(project, name, message);
+
+  return jsonResponse({ ok: true });
 }
 
-function handleEdit(ss, project, auth, messageId, newMessage) {
+function handleEdit(ss, project, name, messageId, newMessage) {
   if (!messageId || !newMessage) return jsonResponse({ error: 'Missing id or message' });
+  if (!name) return jsonResponse({ error: 'Name is required' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) return jsonResponse({ error: 'Chat not found' });
@@ -129,8 +175,8 @@ function handleEdit(ss, project, auth, messageId, newMessage) {
     return jsonResponse({ error: 'Message not found' });
   }
 
-  var msgRole = tab.getRange(sheetRow, 3).getValue().toString().trim();
-  if (msgRole !== auth.role) {
+  var msgAuthor = tab.getRange(sheetRow, 2).getValue().toString().trim();
+  if (msgAuthor !== name) {
     return jsonResponse({ error: 'You can only edit your own messages' });
   }
 
@@ -138,8 +184,9 @@ function handleEdit(ss, project, auth, messageId, newMessage) {
   return jsonResponse({ ok: true });
 }
 
-function handleDelete(ss, project, auth, messageId) {
+function handleDelete(ss, project, name, messageId) {
   if (!messageId) return jsonResponse({ error: 'Missing id' });
+  if (!name) return jsonResponse({ error: 'Name is required' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) return jsonResponse({ error: 'Chat not found' });
@@ -149,8 +196,8 @@ function handleDelete(ss, project, auth, messageId) {
     return jsonResponse({ error: 'Message not found' });
   }
 
-  var msgRole = tab.getRange(sheetRow, 3).getValue().toString().trim();
-  if (msgRole !== auth.role) {
+  var msgAuthor = tab.getRange(sheetRow, 2).getValue().toString().trim();
+  if (msgAuthor !== name) {
     return jsonResponse({ error: 'You can only delete your own messages' });
   }
 
@@ -162,33 +209,22 @@ function doGet(e) {
   try {
     var action = (e.parameter.action || '').trim();
     var project = (e.parameter.project || '').trim();
-    var code = (e.parameter.code || '').trim();
 
     var ss = getSpreadsheet();
 
-    // Verify passphrase (returns role without posting)
-    if (action === 'verify') {
-      if (!project || !code) return jsonResponse({ error: 'Missing required fields' });
-      var auth = verifyCode(ss, project, code);
-      if (!auth) return jsonResponse({ error: 'Invalid passphrase' });
-      return jsonResponse({ ok: true, role: auth.role });
-    }
-
-    // Actions that require auth (via GET for cross-origin compatibility)
+    // Actions that modify data (via GET for cross-origin compatibility)
     if (action === 'post' || action === 'edit' || action === 'delete') {
-      if (!project || !code) return jsonResponse({ error: 'Missing required fields' });
-
-      var auth = verifyCode(ss, project, code);
-      if (!auth) return jsonResponse({ error: 'Invalid passphrase' });
+      var name = (e.parameter.name || '').trim();
+      if (!project) return jsonResponse({ error: 'Missing project' });
 
       if (action === 'post') {
-        return handlePost(ss, project, auth, (e.parameter.message || '').trim());
+        return handlePost(ss, project, name, (e.parameter.message || '').trim());
       }
       if (action === 'edit') {
-        return handleEdit(ss, project, auth, parseInt(e.parameter.id, 10), (e.parameter.message || '').trim());
+        return handleEdit(ss, project, name, parseInt(e.parameter.id, 10), (e.parameter.message || '').trim());
       }
       if (action === 'delete') {
-        return handleDelete(ss, project, auth, parseInt(e.parameter.id, 10));
+        return handleDelete(ss, project, name, parseInt(e.parameter.id, 10));
       }
     }
 
