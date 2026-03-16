@@ -9,7 +9,8 @@
       // We store the path and redirect to index.html, which picks it up.
       var path = window.location.pathname;
       var search = window.location.search;
-      sessionStorage.setItem('spa-redirect', path + search);
+      var hash = window.location.hash;
+      sessionStorage.setItem('spa-redirect', path + search + hash);
       window.location.replace(
         window.location.origin +
           path.replace(/\/\d{4}\/[^/]+\/?$/, '') +

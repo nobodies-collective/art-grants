@@ -644,7 +644,7 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   // Update URL and title only when navigating forward (not on popstate)
   document.title = `${proposal.title} — ${BASE_TITLE}`;
   if (!skipPushState) {
-    window.history.pushState(null, '', proposalUrl(proposal));
+    window.history.pushState(null, '', proposalUrl(proposal) + window.location.hash);
   }
   window.scrollTo(0, 0);
 
