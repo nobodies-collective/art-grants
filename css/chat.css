@@ -251,7 +251,7 @@
 .chat-textarea {
   flex: 1;
   resize: none;
-  min-height: 2.5rem;
+  min-height: 5rem;
   overflow-y: auto;
 }
 
