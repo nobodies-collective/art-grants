@@ -7,19 +7,18 @@
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-light);
   margin-bottom: 0.5rem;
-  background: rgba(44, 36, 24, 0.4);
-  backdrop-filter: blur(4px);
+  background: var(--overlay-dark);
   display: inline-block;
   padding: 0.3rem 0.8rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .hero-title {
   font-size: clamp(2.25rem, 6vw, 4rem);
   font-weight: 700;
-  color: #fff;
+  color: var(--white);
   letter-spacing: -0.02em;
   line-height: 1;
   margin: 0;
@@ -31,7 +30,7 @@
 .page-wrap {
   position: relative;
   width: 100%;
-  max-width: 1400px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   overflow-x: hidden;
   padding: var(--space);
@@ -57,9 +56,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: var(--space);
-  background: rgba(250, 245, 238, 0.92);
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
+  background: var(--card-bg-semi);
+  padding: var(--space) calc(var(--space) * 1.25);
+  border-radius: var(--radius-lg);
 }
 
 .content {
@@ -70,7 +69,7 @@ h1 {
 
 .loading {
   text-align: center;
-  padding: 2rem 0;
+  padding: calc(var(--space) * 2) 0;
   color: var(--text);
 }
 
@@ -96,9 +95,9 @@ h1 {
 .error {
   background: var(--bg);
   color: var(--text);
-  padding: 1rem;
+  padding: var(--space);
   border: 1px solid var(--border);
-  margin: 1rem auto;
+  margin: var(--space) auto;
   max-width: 800px;
 }
 
@@ -141,7 +140,7 @@ h1 {
 }
 
 .inline-link:hover {
-  color: #a85d32;
+  color: var(--accent-dark);
   text-decoration: none;
 }
 
@@ -182,7 +181,7 @@ h1 {
   background: var(--bg);
   font-family: inherit;
   letter-spacing: 0.02em;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   width: 100%;
 }
 
@@ -198,7 +197,7 @@ h1 {
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   letter-spacing: 0.02em;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .year-chip.is-active {
@@ -226,7 +225,7 @@ h1 {
   background: var(--bg);
   font-family: inherit;
   letter-spacing: 0.02em;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 #proposals-list {
@@ -259,7 +258,7 @@ h1 {
   }
 
   .hero-tagline {
-    background: rgba(44, 36, 24, 0.1);
+    background: var(--overlay-light);
     color: var(--muted);
   }
 

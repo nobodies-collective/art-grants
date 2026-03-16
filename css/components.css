@@ -1,12 +1,12 @@
 /* Card and data components */
 
 .proposal-card {
-  background: rgba(250, 245, 238, 0.92);
-  border: 1px solid rgba(228, 221, 212, 0.6);
+  background: var(--card-bg-semi);
+  border: 1px solid var(--card-border-semi);
   padding: 0;
   display: flex;
   flex-direction: row;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   position: relative;
   overflow: hidden;
 }
@@ -19,7 +19,7 @@
 }
 
 .card-thumb {
-  width: 140px;
+  width: var(--card-thumb-width);
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
@@ -33,7 +33,6 @@
   object-fit: cover;
   display: block;
 }
-
 
 .proposal-card.card-clickable {
   cursor: pointer;
@@ -53,7 +52,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--space);
 }
 
 .title-row-right {
@@ -90,7 +89,7 @@
   padding: 0.25rem 0.55rem;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   color: var(--text);
   letter-spacing: 0.02em;
 }
@@ -129,7 +128,7 @@
   background: var(--card-bg);
   flex-direction: column;
   min-height: auto;
-  padding: 1rem;
+  padding: var(--space);
 }
 
 .proposal-card.modal-view header {
@@ -149,7 +148,7 @@
   width: 100%;
   height: auto;
   object-fit: cover;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   aspect-ratio: 4 / 3;
 }
 
@@ -174,7 +173,7 @@
 @media (min-width: 1100px) {
   .detail-layout {
     flex-direction: row;
-    gap: 2rem;
+    gap: calc(var(--space) * 2);
     align-items: flex-start;
   }
 
@@ -183,11 +182,11 @@
     width: 45%;
     max-width: 500px;
     position: sticky;
-    top: 1rem;
+    top: var(--space);
   }
 
   .detail-image .cover-image {
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
   }
 }
 
@@ -218,7 +217,7 @@
 }
 
 .details-content {
-  margin-top: 1rem;
+  margin-top: var(--space);
   line-height: 1.5;
 }
 
@@ -248,7 +247,7 @@
 
 .empty {
   text-align: center;
-  padding: 1.5rem;
+  padding: calc(var(--space) * 1.5);
   color: var(--text);
   grid-column: 1 / -1;
   opacity: 0.5;

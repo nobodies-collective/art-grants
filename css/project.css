@@ -1,17 +1,17 @@
 /* Full project page */
 
 .project-page {
-  max-width: 1400px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   padding: var(--space);
-  padding-bottom: 3rem;
+  padding-bottom: calc(var(--space) * 3);
   background: none;
   min-height: 100vh;
 }
 
 .project-header {
-  margin-bottom: 1.5rem;
-  padding: 1rem 0;
+  margin-bottom: calc(var(--space) * 1.5);
+  padding: var(--space) 0;
 }
 
 .project-header-top {
@@ -63,9 +63,8 @@
 .project-tab {
   padding: 0.5rem 1.25rem;
   border: none;
-  border-radius: 12px;
-  background: rgba(250, 245, 238, 0.5);
-  backdrop-filter: blur(4px);
+  border-radius: var(--radius-lg);
+  background: var(--border);
   color: var(--muted);
   font-size: var(--font-size);
   font-weight: 400;
@@ -74,12 +73,12 @@
 }
 
 .project-tab:hover {
-  background: rgba(250, 245, 238, 0.7);
+  background: var(--bg-alt);
 }
 
 .project-tab.is-active {
   background: var(--accent);
-  color: #fff;
+  color: var(--white);
   font-weight: 500;
 }
 
@@ -104,16 +103,16 @@
 /* Image floats free — no card wrapper */
 .project-card .detail-image,
 .project-card .detail-gallery {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .project-card .detail-image .cover-image {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .project-card .detail-gallery .gallery-image {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 /* Text content */
@@ -134,13 +133,13 @@
 
 @media (min-width: 1100px) {
   .project-card .detail-layout {
-    gap: 1.5rem;
+    gap: calc(var(--space) * 1.5);
   }
 
   .project-card .detail-image,
   .project-card .detail-gallery {
     position: sticky;
-    top: 1rem;
+    top: var(--space);
   }
 }
 
@@ -150,6 +149,6 @@
   }
 
   .project-card .detail-text {
-    padding: 1rem;
+    padding: var(--space);
   }
 }
