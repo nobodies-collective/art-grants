@@ -204,7 +204,7 @@ export function createChatSection(proposal) {
     });
     const hintEl = document.createElement('p');
     hintEl.className = 'chat-hint';
-    hintEl.textContent = 'You can edit or delete your own messages from the same browser.';
+    hintEl.textContent = 'You can edit or delete your own messages from the same browser. Clearing your browser cache will remove this ability.';
 
     container.appendChild(form);
     container.appendChild(errorEl);
