@@ -26,6 +26,10 @@
   gap: 0.5rem;
 }
 
+.chat-section.chat-empty-state {
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 768px) {
   .chat-section {
     grid-template-columns: 1fr;

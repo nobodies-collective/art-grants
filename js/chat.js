@@ -97,7 +97,9 @@ export function createChatSection(proposal) {
       messagesEl.innerHTML = '';
       if (!messages.length) {
         messagesEl.innerHTML = '<p class="chat-empty">No messages yet.</p>';
+        container.classList.add('chat-empty-state');
       } else {
+        container.classList.remove('chat-empty-state');
         messages.forEach((msg) => {
           messagesEl.appendChild(renderMessage(msg, slug, refreshMessages));
         });
