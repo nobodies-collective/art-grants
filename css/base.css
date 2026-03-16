@@ -29,7 +29,7 @@ button, input, select, textarea {
 
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: url('../img/bg.jpg') center top/cover no-repeat fixed var(--bg);
+  background: url('../img/bg2.jpg') center top/cover no-repeat fixed var(--bg);
   color: var(--text);
 }
 
