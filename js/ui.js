@@ -76,9 +76,15 @@ function attachEventListeners() {
       if (proposal) openProposalPage(proposal, { skipPushState: true });
     } else {
       if (state.currentProjectPage) {
-        state.currentProjectPage.remove();
-        state.currentProjectPage = null;
+        // Use closeProjectPage but prevent it from pushing state again
+        const page = state.currentProjectPage;
+        page.remove();
         document.querySelector('.layout').style.display = '';
+        const heroHeader = document.querySelector('.hero-header');
+        if (heroHeader) heroHeader.style.display = '';
+        document.body.classList.remove('project-view');
+        state.currentProjectPage = null;
+        document.title = BASE_TITLE;
       }
     }
   });

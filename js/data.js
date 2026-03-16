@@ -74,8 +74,16 @@ export function mapRowToProposal(row, headers, index = null) {
   });
 
   if (!images.length) {
-    const encodedTitle = encodeURIComponent(title);
-    images.push(PLACEHOLDER_IMAGE_BASE);
+    // Generate a unique muted color from the title
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
+    const h = Math.abs(hash) % 360;
+    const color = `hsl(${h}, 25%, 78%)`;
+    // Convert to hex for placehold.co
+    const el = document.createElement('canvas').getContext('2d');
+    el.fillStyle = color;
+    const hex = el.fillStyle.slice(1);
+    images.push(`https://placehold.co/800x450/${hex}/${hex}`);
   }
   const imageUrl = images[0];
 
