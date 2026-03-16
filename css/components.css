@@ -64,6 +64,7 @@
 }
 
 .proposal-card h2 {
+  font-size: 1.05rem;
   margin-bottom: 0.25rem;
   color: inherit;
   flex: 1;
