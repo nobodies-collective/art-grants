@@ -74,15 +74,11 @@ export function mapRowToProposal(row, headers, index = null) {
   });
 
   if (!images.length) {
-    // Generate a unique muted color from the title
+    // Warm earthy palette matching the sunset background
+    const palette = ['d4c4a8', 'c9b99a', 'bfae8e', 'd1c0a5', 'c4b193', 'cfc0aa', 'b8a88f', 'c7b89e'];
     let hash = 0;
     for (let i = 0; i < title.length; i++) hash = title.charCodeAt(i) + ((hash << 5) - hash);
-    const h = Math.abs(hash) % 360;
-    const color = `hsl(${h}, 25%, 78%)`;
-    // Convert to hex for placehold.co
-    const el = document.createElement('canvas').getContext('2d');
-    el.fillStyle = color;
-    const hex = el.fillStyle.slice(1);
+    const hex = palette[Math.abs(hash) % palette.length];
     images.push(`https://placehold.co/800x450/${hex}/${hex}`);
   }
   const imageUrl = images[0];
