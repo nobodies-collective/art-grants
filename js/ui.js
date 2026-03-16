@@ -608,19 +608,29 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
     chatPanel.style.display = 'none';
     chatPanel.appendChild(createChatSection(proposal));
 
-    projectTab.addEventListener('click', () => {
+    function showProjectTab() {
       projectTab.classList.add('is-active');
       chatTab.classList.remove('is-active');
       projectPanel.style.display = '';
       chatPanel.style.display = 'none';
-    });
+      history.replaceState(null, '', window.location.pathname);
+    }
 
-    chatTab.addEventListener('click', () => {
+    function showChatTab() {
       chatTab.classList.add('is-active');
       projectTab.classList.remove('is-active');
       chatPanel.style.display = '';
       projectPanel.style.display = 'none';
-    });
+      history.replaceState(null, '', window.location.pathname + '#discussion');
+    }
+
+    projectTab.addEventListener('click', showProjectTab);
+    chatTab.addEventListener('click', showChatTab);
+
+    // Restore tab from hash
+    if (window.location.hash === '#discussion') {
+      showChatTab();
+    }
 
     page.append(header, tabNav, projectPanel, chatPanel);
   } else {
