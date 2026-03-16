@@ -160,7 +160,25 @@ async function loadData() {
     updateProposalCount(state.proposalData.length, state.proposalData.length);
     applyFiltersAndRender();
     showLoading(false);
+
+    // Dismiss preloader and reveal page
+    const preloader = document.getElementById('preloader');
+    if (preloader) {
+      preloader.classList.add('fade-out');
+      setTimeout(() => preloader.remove(), 300);
+    }
     document.body.classList.remove('is-loading');
+
+    // Stagger entrance of elements
+    const staggerEls = [
+      document.querySelector('.hero-header'),
+      document.querySelector('.sidebar'),
+      ...document.querySelectorAll('.proposal-card'),
+    ].filter(Boolean);
+    staggerEls.forEach((el, i) => {
+      el.classList.add('stagger-in');
+      el.style.animationDelay = `${i * 0.04}s`;
+    });
 
     const initialInfo = getProposalFromPath();
     if (initialInfo) {

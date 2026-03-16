@@ -58,12 +58,57 @@ body.project-view {
   background-color: var(--bg);
 }
 
+/* Preloader */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preloader-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.preloader.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Page entrance */
 body.is-loading .page-wrap {
   opacity: 0;
 }
 
 body:not(.is-loading) .page-wrap {
   opacity: 1;
+}
+
+/* Stagger entrance for children */
+.stagger-in {
+  opacity: 0;
+  transform: translateY(8px);
+  animation: staggerIn 0.35s ease forwards;
+}
+
+@keyframes staggerIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .visually-hidden {
