@@ -354,6 +354,13 @@
   border-color: var(--text);
 }
 
+.chat-hint {
+  font-size: var(--font-size);
+  color: var(--text);
+  opacity: 0.35;
+  margin: 0;
+}
+
 @media (max-width: 600px) {
   .chat-form-row {
     flex-direction: column;

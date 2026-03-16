@@ -1,10 +1,19 @@
 import { CHAT_SCRIPT_URL } from './constants.js';
 import { escapeHtml, renderMarkdown } from './utils.js';
 
+function getUserToken() {
+  let token = localStorage.getItem('chat-token');
+  if (!token) {
+    token = crypto.randomUUID();
+    localStorage.setItem('chat-token', token);
+  }
+  return token;
+}
+
 async function fetchChatMessages(slug) {
   if (!CHAT_SCRIPT_URL) return [];
   try {
-    const params = new URLSearchParams({ project: slug });
+    const params = new URLSearchParams({ project: slug, token: getUserToken() });
     const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
     if (!res.ok) return [];
     const data = await res.json();
@@ -24,6 +33,7 @@ async function postChatMessage(slug, name, message) {
     project: slug,
     name,
     message,
+    token: getUserToken(),
   });
   const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
   if (!res.ok) throw new Error('Failed to post message');
@@ -32,14 +42,14 @@ async function postChatMessage(slug, name, message) {
   return data;
 }
 
-async function editChatMessage(slug, name, messageId, newMessage) {
+async function editChatMessage(slug, messageId, newMessage) {
   if (!CHAT_SCRIPT_URL) throw new Error('Chat not configured.');
   const params = new URLSearchParams({
     action: 'edit',
     project: slug,
-    name,
     id: String(messageId),
     message: newMessage,
+    token: getUserToken(),
   });
   const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
   if (!res.ok) throw new Error('Failed to edit message');
@@ -48,13 +58,13 @@ async function editChatMessage(slug, name, messageId, newMessage) {
   return data;
 }
 
-async function deleteChatMessage(slug, name, messageId) {
+async function deleteChatMessage(slug, messageId) {
   if (!CHAT_SCRIPT_URL) throw new Error('Chat not configured.');
   const params = new URLSearchParams({
     action: 'delete',
     project: slug,
-    name,
     id: String(messageId),
+    token: getUserToken(),
   });
   const res = await fetch(`${CHAT_SCRIPT_URL}?${params}`);
   if (!res.ok) throw new Error('Failed to delete message');
@@ -191,8 +201,13 @@ export function createChatSection(proposal) {
         btn.textContent = 'Send';
       }
     });
+    const hintEl = document.createElement('p');
+    hintEl.className = 'chat-hint';
+    hintEl.textContent = 'You can edit or delete your own messages from the same browser.';
+
     container.appendChild(form);
     container.appendChild(errorEl);
+    container.appendChild(hintEl);
   }
 
   return container;
@@ -203,10 +218,7 @@ function renderMessage(msg, slug, onRefresh) {
   el.className = 'chat-message';
 
   const author = (msg.author || 'Anonymous').trim();
-
-  // Check ownership: stored name must match message author
-  const savedName = localStorage.getItem('chat-name') || '';
-  const canModify = savedName && savedName === author;
+  const canModify = msg.isOwn === true;
 
   const actionsHTML = canModify ? `
     <span class="chat-message-actions">
@@ -226,7 +238,7 @@ function renderMessage(msg, slug, onRefresh) {
 
   if (canModify) {
     el.querySelector('.chat-edit-btn').addEventListener('click', () => {
-      enterEditMode(el, msg, slug, savedName, onRefresh);
+      enterEditMode(el, msg, slug, onRefresh);
     });
 
     el.querySelector('.chat-delete-btn').addEventListener('click', async () => {
@@ -235,7 +247,7 @@ function renderMessage(msg, slug, onRefresh) {
       btn.disabled = true;
       btn.textContent = '...';
       try {
-        await deleteChatMessage(slug, savedName, msg.id);
+        await deleteChatMessage(slug, msg.id);
         onRefresh();
       } catch (err) {
         alert('Failed to delete: ' + err.message);
@@ -248,7 +260,7 @@ function renderMessage(msg, slug, onRefresh) {
   return el;
 }
 
-function enterEditMode(el, msg, slug, name, onRefresh) {
+function enterEditMode(el, msg, slug, onRefresh) {
   const bodyEl = el.querySelector('.chat-message-body');
   const originalHTML = bodyEl.innerHTML;
 
@@ -288,7 +300,7 @@ function enterEditMode(el, msg, slug, name, onRefresh) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
     try {
-      await editChatMessage(slug, name, msg.id, newText);
+      await editChatMessage(slug, msg.id, newText);
       onRefresh();
     } catch (err) {
       alert('Failed to save: ' + err.message);

@@ -122,6 +122,7 @@ function doPost(e) {
     var action = (data.action || 'post').trim();
     var project = (data.project || '').trim();
     var name = (data.name || '').trim();
+    var token = (data.token || '').trim();
 
     if (!project) {
       return jsonResponse({ error: 'Missing project' });
@@ -129,9 +130,9 @@ function doPost(e) {
 
     var ss = getSpreadsheet();
 
-    if (action === 'post') return handlePost(ss, project, name, (data.message || '').trim());
-    if (action === 'edit') return handleEdit(ss, project, name, parseInt(data.id, 10), (data.message || '').trim());
-    if (action === 'delete') return handleDelete(ss, project, name, parseInt(data.id, 10));
+    if (action === 'post') return handlePost(ss, project, name, (data.message || '').trim(), token);
+    if (action === 'edit') return handleEdit(ss, project, token, parseInt(data.id, 10), (data.message || '').trim());
+    if (action === 'delete') return handleDelete(ss, project, token, parseInt(data.id, 10));
 
     return jsonResponse({ error: 'Unknown action' });
   } catch (err) {
@@ -139,19 +140,20 @@ function doPost(e) {
   }
 }
 
-function handlePost(ss, project, name, message) {
+function handlePost(ss, project, name, message, token) {
   if (!message) return jsonResponse({ error: 'Message is required' });
   if (!name) return jsonResponse({ error: 'Name is required' });
+  if (!token) return jsonResponse({ error: 'Missing token' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) {
     tab = ss.insertSheet(project);
-    tab.appendRow(['Timestamp', 'Author', 'Role', 'Message']);
+    tab.appendRow(['Timestamp', 'Author', 'Role', 'Message', 'Token']);
     tab.setFrozenRows(1);
     tab.hideSheet();
   }
 
-  tab.appendRow([new Date(), name, '', message]);
+  tab.appendRow([new Date(), name, '', message, token]);
 
   // Send email notifications
   sendNotifications(project, name, message);
@@ -159,9 +161,9 @@ function handlePost(ss, project, name, message) {
   return jsonResponse({ ok: true });
 }
 
-function handleEdit(ss, project, name, messageId, newMessage) {
+function handleEdit(ss, project, token, messageId, newMessage) {
   if (!messageId || !newMessage) return jsonResponse({ error: 'Missing id or message' });
-  if (!name) return jsonResponse({ error: 'Name is required' });
+  if (!token) return jsonResponse({ error: 'Missing token' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) return jsonResponse({ error: 'Chat not found' });
@@ -171,8 +173,8 @@ function handleEdit(ss, project, name, messageId, newMessage) {
     return jsonResponse({ error: 'Message not found' });
   }
 
-  var msgAuthor = tab.getRange(sheetRow, 2).getValue().toString().trim();
-  if (msgAuthor !== name) {
+  var msgToken = tab.getRange(sheetRow, 5).getValue().toString().trim();
+  if (msgToken !== token) {
     return jsonResponse({ error: 'You can only edit your own messages' });
   }
 
@@ -180,9 +182,9 @@ function handleEdit(ss, project, name, messageId, newMessage) {
   return jsonResponse({ ok: true });
 }
 
-function handleDelete(ss, project, name, messageId) {
+function handleDelete(ss, project, token, messageId) {
   if (!messageId) return jsonResponse({ error: 'Missing id' });
-  if (!name) return jsonResponse({ error: 'Name is required' });
+  if (!token) return jsonResponse({ error: 'Missing token' });
 
   var tab = ss.getSheetByName(project);
   if (!tab) return jsonResponse({ error: 'Chat not found' });
@@ -192,8 +194,8 @@ function handleDelete(ss, project, name, messageId) {
     return jsonResponse({ error: 'Message not found' });
   }
 
-  var msgAuthor = tab.getRange(sheetRow, 2).getValue().toString().trim();
-  if (msgAuthor !== name) {
+  var msgToken = tab.getRange(sheetRow, 5).getValue().toString().trim();
+  if (msgToken !== token) {
     return jsonResponse({ error: 'You can only delete your own messages' });
   }
 
@@ -205,6 +207,7 @@ function doGet(e) {
   try {
     var action = (e.parameter.action || '').trim();
     var project = (e.parameter.project || '').trim();
+    var token = (e.parameter.token || '').trim();
 
     var ss = getSpreadsheet();
 
@@ -214,13 +217,13 @@ function doGet(e) {
       if (!project) return jsonResponse({ error: 'Missing project' });
 
       if (action === 'post') {
-        return handlePost(ss, project, name, (e.parameter.message || '').trim());
+        return handlePost(ss, project, name, (e.parameter.message || '').trim(), token);
       }
       if (action === 'edit') {
-        return handleEdit(ss, project, name, parseInt(e.parameter.id, 10), (e.parameter.message || '').trim());
+        return handleEdit(ss, project, token, parseInt(e.parameter.id, 10), (e.parameter.message || '').trim());
       }
       if (action === 'delete') {
-        return handleDelete(ss, project, name, parseInt(e.parameter.id, 10));
+        return handleDelete(ss, project, token, parseInt(e.parameter.id, 10));
       }
     }
 
@@ -233,12 +236,14 @@ function doGet(e) {
     var rows = tab.getDataRange().getValues();
     var messages = [];
     for (var i = 1; i < rows.length; i++) {
+      var msgToken = (rows[i][4] || '').toString().trim();
       messages.push({
         id: i,
         timestamp: rows[i][0] ? rows[i][0].toISOString() : '',
         author: rows[i][1] || '',
         role: rows[i][2] || '',
         message: rows[i][3] || '',
+        isOwn: token && msgToken === token,
       });
     }
 
