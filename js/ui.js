@@ -251,6 +251,19 @@ function applyFiltersAndRender() {
   renderProposals();
 }
 
+function parseTimestamp(ts) {
+  if (!ts) return 0;
+  const str = ts.toString().trim();
+  // DD/MM/YYYY HH:MM:SS format
+  const dmyMatch = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(\d{1,2}):(\d{2}):(\d{2})/);
+  if (dmyMatch) return new Date(dmyMatch[3], dmyMatch[2] - 1, dmyMatch[1], dmyMatch[4], dmyMatch[5], dmyMatch[6]).getTime();
+  // DD/MM/YYYY without time
+  const dmyOnly = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmyOnly) return new Date(dmyOnly[3], dmyOnly[2] - 1, dmyOnly[1]).getTime();
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
 function sortProposals(list) {
   const copy = [...list];
   if (state.sortMode === 'title-asc') {
@@ -283,16 +296,14 @@ function sortProposals(list) {
       return a.titleLower.localeCompare(b.titleLower);
     });
   }
-  // Default: sort by year descending, then by category
-  return copy.sort((a, b) => {
-    const yearA = parseInt(a.year) || 0;
-    const yearB = parseInt(b.year) || 0;
-    if (yearA !== yearB) return yearB - yearA; // Descending
-    const categoryA = (a.category || '').toLowerCase();
-    const categoryB = (b.category || '').toLowerCase();
-    if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
-    return a.titleLower.localeCompare(b.titleLower);
-  });
+  if (state.sortMode === 'newest') {
+    return copy.sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp));
+  }
+  if (state.sortMode === 'oldest') {
+    return copy.sort((a, b) => parseTimestamp(a.timestamp) - parseTimestamp(b.timestamp));
+  }
+  // Default: sort by timestamp descending (newest first)
+  return copy.sort((a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp));
 }
 
 function renderProposals() {
@@ -397,7 +408,9 @@ function buildDetailSections(proposal) {
     { label: 'Power', value: proposal.power },
     { label: 'Sound', value: proposal.sound },
     { label: 'Safety & Risk Management', value: proposal.safety },
-    { label: 'Grant Request', value: proposal.grantRequest ? `\u20ac${proposal.grantRequest}` : '', dividerBefore: true },
+    { label: 'Total Project Budget', value: proposal.totalProjectBudget ? `\u20ac${proposal.totalProjectBudget}` : '', dividerBefore: true },
+    { label: 'Grant Request', value: proposal.grantRequest ? `\u20ac${proposal.grantRequest}` : '' },
+    { label: 'Budget Breakdown', value: proposal.budgetBreakdown },
     { label: 'Other Funding', value: proposal.otherFunding },
     { label: 'Comments', value: proposal.comments },
   ];

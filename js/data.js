@@ -95,6 +95,7 @@ export function mapRowToProposal(row, headers, index = null) {
     titleLower: title.toLowerCase(),
     slug,
     uniqueKey,
+    timestamp,
     year,
     category: findColumn(row, headers, ['Category', 'category']),
     name: findColumn(row, headers, ['Artist name', 'artist name', 'Name', 'name', 'Artist', 'artist']),
@@ -112,12 +113,20 @@ export function mapRowToProposal(row, headers, index = null) {
     technology: findColumn(row, headers, ['Technology', 'technology']),
     power: findColumn(row, headers, ['Power', 'power']),
     experienceInteraction: findColumn(row, headers, ['Experience & Interaction', 'Experience &amp; Interaction']),
-    grantRequest: findColumn(row, headers, ['Grant Request (EUR)', 'Grant Request (EUR) ', 'Grant Request']),
+    totalProjectBudget: findColumn(row, headers, ['Total Project Budget', 'total project budget']),
+    grantRequest: findColumn(row, headers, ['Grant Request', 'Grant Request (EUR)', 'Grant Request (EUR) ']),
+    budgetBreakdown: findColumn(row, headers, ['Budget Breakdown', 'budget breakdown']),
     team: findColumn(row, headers, ['Team', 'team']),
     comments: findColumn(row, headers, ['Comments', 'comments']),
     coverImage: imageUrl,
     images,
-    messagingOn: findColumn(row, headers, ['Messaging On', 'messaging on', 'Messaging']).toLowerCase() === 'true',
+    messagingOn: (() => {
+      const off = findColumn(row, headers, ['Messaging Off', 'messaging off']);
+      if (off) return off.toLowerCase() !== 'true';
+      const on = findColumn(row, headers, ['Messaging On', 'messaging on', 'Messaging']);
+      if (on) return on.toLowerCase() === 'true';
+      return true; // default: messaging on
+    })(),
   };
 }
 
