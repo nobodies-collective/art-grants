@@ -1,9 +1,40 @@
+/* Hero header */
+.hero-header {
+  padding: 2rem 0 1rem;
+}
+
+.hero-tagline {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+  background: rgba(44, 36, 24, 0.4);
+  backdrop-filter: blur(4px);
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0;
+  text-align: left;
+  text-transform: none;
+}
+
 /* Layout and structural styles */
 .page-wrap {
+  position: relative;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   overflow-x: hidden;
+  padding: var(--space);
 }
 
 h1 {
@@ -26,6 +57,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: var(--space);
+  background: rgba(250, 245, 238, 0.92);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
 }
 
 .content {
@@ -60,7 +94,7 @@ h1 {
 }
 
 .error {
-  background: #ffffff;
+  background: var(--bg);
   color: var(--text);
   padding: 1rem;
   border: 1px solid var(--border);
@@ -100,13 +134,14 @@ h1 {
 }
 
 .inline-link {
-  color: var(--text);
+  color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 
 .inline-link:hover {
+  color: #a85d32;
   text-decoration: none;
 }
 
@@ -163,7 +198,6 @@ h1 {
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   letter-spacing: 0.02em;
-  transition: background 0.1s ease, color 0.1s ease;
   border-radius: 6px;
 }
 
@@ -210,10 +244,6 @@ h1 {
 
 
 @media (max-width: 768px) {
-  body {
-    padding: 1rem;
-  }
-
   h1 {
     font-size: var(--font-size);
   }

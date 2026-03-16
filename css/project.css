@@ -1,13 +1,17 @@
 /* Full project page */
 
 .project-page {
-  max-width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 0 2rem;
+  padding: var(--space);
+  padding-bottom: 3rem;
+  background: none;
+  min-height: 100vh;
 }
 
 .project-header {
   margin-bottom: 1.5rem;
+  padding: 1rem 0;
 }
 
 .project-header-top {
@@ -31,9 +35,9 @@
 }
 
 .project-title {
-  font-size: var(--font-size);
-  font-weight: 300;
-  letter-spacing: 0.02em;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin: 0 0 0.5rem;
   text-align: left;
   text-transform: none;
@@ -49,22 +53,79 @@
   opacity: 0.8;
 }
 
+/* Tabs */
+.project-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: var(--space);
+}
+
+.project-tab {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  background: rgba(250, 245, 238, 0.5);
+  backdrop-filter: blur(4px);
+  color: var(--muted);
+  font-size: var(--font-size);
+  font-weight: 400;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.project-tab:hover {
+  background: rgba(250, 245, 238, 0.7);
+}
+
+.project-tab.is-active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+}
+
 .project-body {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space);
-  align-items: start;
+  align-items: stretch;
 }
 
 .project-card {
-  border: 1px solid var(--border);
-  border-radius: 2px;
+  border: none;
+  border-radius: 0;
+  background: none;
+}
+
+.project-card.modal-view {
+  background: none;
+  padding: 0;
+}
+
+/* Image floats free — no card wrapper */
+.project-card .detail-image,
+.project-card .detail-gallery {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.project-card .detail-image .cover-image {
+  border-radius: 12px;
+}
+
+.project-card .detail-gallery .gallery-image {
+  border-radius: 12px;
+}
+
+/* Text content */
+.project-card .detail-text {
+  padding: 0;
 }
 
 .project-page .chat-section {
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 1.25rem;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .project-page .chat-messages {
@@ -72,18 +133,23 @@
 }
 
 @media (min-width: 1100px) {
-  .project-body {
-    grid-template-columns: repeat(2, 1fr);
+  .project-card .detail-layout {
+    gap: 1.5rem;
   }
 
-  .project-card,
-  .project-page .chat-section {
-    grid-column: 1 / -1;
+  .project-card .detail-image,
+  .project-card .detail-gallery {
+    position: sticky;
+    top: 1rem;
   }
 }
 
 @media (max-width: 768px) {
   .project-title {
-    font-size: var(--font-size);
+    font-size: 1.5rem;
+  }
+
+  .project-card .detail-text {
+    padding: 1rem;
   }
 }

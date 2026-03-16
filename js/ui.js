@@ -53,9 +53,13 @@ function attachEventListeners() {
   });
 
   if (searchInput) {
+    let searchDebounce;
     searchInput.addEventListener('input', (event) => {
-      state.searchQuery = event.target.value.trim().toLowerCase();
-      applyFiltersAndRender();
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        state.searchQuery = event.target.value.trim().toLowerCase();
+        applyFiltersAndRender();
+      }, 150);
     });
   }
 
@@ -149,7 +153,8 @@ async function loadData() {
     buildYearFilters();
     updateProposalCount(state.proposalData.length, state.proposalData.length);
     applyFiltersAndRender();
-    // Loading will be hidden when cards are ready (handled in renderProposals)
+    showLoading(false);
+    document.body.classList.remove('is-loading');
 
     const initialInfo = getProposalFromPath();
     if (initialInfo) {
@@ -283,11 +288,6 @@ function renderProposals() {
       card.setAttribute('aria-label', proposal.title);
       card.dataset.slug = proposal.slug;
       card.dataset.uniqueKey = proposal.uniqueKey;
-      if (isInitialLoad) {
-        card.classList.add('fade-in-on-load');
-      } else {
-        card.classList.add('no-animation');
-      }
       card.addEventListener('click', () => openProposalPage(proposal));
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -300,47 +300,8 @@ function renderProposals() {
     });
     
     if (isInitialLoad) {
-      // Wait for images to load, then fade in all cards at once
-      const images = proposalsContainer.querySelectorAll('img');
-      const markLoaded = () => {
-        if (!proposalsContainer.classList.contains('cards-loaded')) {
-          proposalsContainer.classList.add('cards-loaded');
-          showLoading(false);
-          isInitialLoad = false;
-        }
-      };
-
-      // Always set a timeout as fallback
-      const fallbackTimeout = setTimeout(() => {
-        markLoaded();
-      }, 1500);
-
-      if (images.length === 0) {
-        // No images, fade in immediately
-        clearTimeout(fallbackTimeout);
-        setTimeout(markLoaded, 100);
-      } else {
-        let loadedCount = 0;
-        const totalImages = images.length;
-        
-        const handleDone = () => {
-          loadedCount++;
-          if (loadedCount === totalImages) {
-            clearTimeout(fallbackTimeout);
-            markLoaded();
-          }
-        };
-
-        images.forEach((img) => {
-          if (img.complete && img.naturalHeight !== 0) {
-            handleDone();
-          } else {
-            img.addEventListener('load', handleDone, { once: true });
-            img.addEventListener('error', handleDone, { once: true });
-          }
-        });
-      }
-    } else {
+      proposalsContainer.classList.add('cards-loaded');
+      showLoading(false);
       isInitialLoad = false;
     }
   } else if (!hasCardsInDom) {
@@ -349,7 +310,6 @@ function renderProposals() {
     state.proposalData.forEach((proposal) => {
       const card = cardElements.get(proposal.uniqueKey);
       if (card) {
-        card.classList.add('no-animation');
         proposalsContainer.appendChild(card);
       }
     });
@@ -521,9 +481,12 @@ function formatAuthor(proposal) {
 }
 
 function openProposalPage(proposal, { skipPushState = false } = {}) {
-  // Hide listing UI
+  // Hide listing UI and hero, switch to neutral bg
   const layout = document.querySelector('.layout');
   layout.style.display = 'none';
+  const heroHeader = document.querySelector('.hero-header');
+  if (heroHeader) heroHeader.style.display = 'none';
+  document.body.classList.add('project-view');
 
   // Build project page
   const page = document.createElement('div');
@@ -583,13 +546,52 @@ function openProposalPage(proposal, { skipPushState = false } = {}) {
   });
   card.classList.add('project-card');
 
-  const body = document.createElement('div');
-  body.className = 'project-body';
-  body.appendChild(card);
-  if (proposal.messagingOn) {
-    body.appendChild(createChatSection(proposal));
+  // Tab navigation
+  const hasChat = proposal.messagingOn;
+  if (hasChat) {
+    const tabNav = document.createElement('nav');
+    tabNav.className = 'project-tabs';
+
+    const projectTab = document.createElement('button');
+    projectTab.className = 'project-tab is-active';
+    projectTab.textContent = 'Project';
+
+    const chatTab = document.createElement('button');
+    chatTab.className = 'project-tab';
+    chatTab.textContent = 'Discussion';
+
+    tabNav.append(projectTab, chatTab);
+
+    const projectPanel = document.createElement('div');
+    projectPanel.className = 'project-body tab-panel';
+    projectPanel.appendChild(card);
+
+    const chatPanel = document.createElement('div');
+    chatPanel.className = 'project-body tab-panel';
+    chatPanel.style.display = 'none';
+    chatPanel.appendChild(createChatSection(proposal));
+
+    projectTab.addEventListener('click', () => {
+      projectTab.classList.add('is-active');
+      chatTab.classList.remove('is-active');
+      projectPanel.style.display = '';
+      chatPanel.style.display = 'none';
+    });
+
+    chatTab.addEventListener('click', () => {
+      chatTab.classList.add('is-active');
+      projectTab.classList.remove('is-active');
+      chatPanel.style.display = '';
+      projectPanel.style.display = 'none';
+    });
+
+    page.append(header, tabNav, projectPanel, chatPanel);
+  } else {
+    const body = document.createElement('div');
+    body.className = 'project-body';
+    body.appendChild(card);
+    page.append(header, body);
   }
-  page.append(header, body);
   document.querySelector('.page-wrap').appendChild(page);
 
   // Update URL and title only when navigating forward (not on popstate)
@@ -608,6 +610,9 @@ function closeProjectPage(page) {
   }
   const layout = document.querySelector('.layout');
   layout.style.display = '';
+  const heroHeader = document.querySelector('.hero-header');
+  if (heroHeader) heroHeader.style.display = '';
+  document.body.classList.remove('project-view');
   state.currentProjectPage = null;
 
   document.title = BASE_TITLE;

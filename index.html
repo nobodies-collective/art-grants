@@ -22,14 +22,16 @@
       rel="stylesheet"
       href="css/main.css?v=3" />
   </head>
-  <body>
+  <body class="is-loading">
     <div class="page-wrap">
-      <h1 class="visually-hidden">Art Grants</h1>
+      <header class="hero-header">
+        <p class="hero-tagline">Elsewhere Burn 2026</p>
+        <h1 class="hero-title">Art Grants</h1>
+      </header>
 
       <div class="layout">
         <aside class="sidebar">
           <section class="intro">
-            <h2 class="intro-label">Art Grants</h2>
             <p>
               This platform displays art grant proposals. Proposals are submitted through a form and added to a spreadsheet,
               which populates this site. Browse proposals or
@@ -39,6 +41,13 @@
                 rel="noopener noreferrer"
                 class="inline-link"
                 >submit your own</a
+              >. Read more about the event at
+              <a
+                href="https://nobodies.team/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-link"
+                >nobodies.team</a
               >.
             </p>
             <p class="intro-count"><span id="proposal-count">0/0</span> proposals listed.</p>
@@ -104,8 +113,8 @@
         }
       })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
     <script
       type="module"
       src="js/main.js"></script>

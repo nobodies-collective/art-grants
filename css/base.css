@@ -2,15 +2,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 :root {
-  --bg: #ffffff;
-  --card-bg: #ffffff;
-  --text: #050505;
-  --muted: #161616;
-  --border: #d7d7d7;
-  --accent: #d7d7d7;
+  --bg: #faf5ee;
+  --card-bg: #faf5ee;
+  --text: #2c2418;
+  --muted: #6b5e50;
+  --border: #e4ddd4;
+  --accent: #c2703e;
   --space: 1rem;
   --font-size: 15px;
-
 }
 
 * {
@@ -30,13 +29,27 @@ button, input, select, textarea {
 
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  background: url('../img/bg.jpg') center top/cover no-repeat fixed var(--bg);
   color: var(--text);
+}
+
+body.project-view {
+  background-image: none;
+  background-color: var(--bg);
+}
+
+body.is-loading .page-wrap {
+  opacity: 0;
+}
+
+body:not(.is-loading) .page-wrap {
+  opacity: 1;
+}
   font-size: var(--font-size);
   font-weight: 300;
   line-height: 1.5;
   letter-spacing: 0.01em;
-  padding: var(--space);
+  padding: 0;
 }
 
 .visually-hidden {

@@ -75,7 +75,7 @@ export function mapRowToProposal(row, headers, index = null) {
 
   if (!images.length) {
     const encodedTitle = encodeURIComponent(title);
-    images.push(`${PLACEHOLDER_IMAGE_BASE}?text=${encodedTitle}&font=lato`);
+    images.push(PLACEHOLDER_IMAGE_BASE);
   }
   const imageUrl = images[0];
 

@@ -84,11 +84,6 @@ export function createChatSection(proposal) {
   const container = document.createElement('div');
   container.className = 'chat-section';
 
-  const heading = document.createElement('h3');
-  heading.className = 'chat-heading';
-  heading.textContent = 'Project Discussion';
-  container.appendChild(heading);
-
   const messagesEl = document.createElement('div');
   messagesEl.className = 'chat-messages';
   messagesEl.innerHTML = '<p class="chat-loading">Loading discussion...</p>';
@@ -122,11 +117,9 @@ export function createChatSection(proposal) {
     form.className = 'chat-form';
     form.innerHTML = `
       <div class="chat-compose">
-        <label for="chat-msg-${slug}" class="visually-hidden">Message</label>
         <textarea id="chat-msg-${slug}" name="message" class="chat-input chat-textarea" placeholder="Write a message..." rows="2" required></textarea>
       </div>
       <div class="chat-bottom">
-        <label for="chat-name-${slug}" class="visually-hidden">Your name</label>
         <input type="text" id="chat-name-${slug}" name="name" class="chat-input chat-name" placeholder="Your name" required value="${escapeHtml(savedName)}" />
         <button type="submit" class="chat-send">Send</button>
       </div>
