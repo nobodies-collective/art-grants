@@ -8,6 +8,11 @@
   gap: var(--space);
 }
 
+.chat-section:not(.chat-ready) .chat-form,
+.chat-section:not(.chat-ready) .chat-hint {
+  display: none;
+}
+
 .chat-heading {
   font-size: var(--font-size);
   text-transform: uppercase;

@@ -103,7 +103,7 @@ export function createChatSection(proposal) {
   const savedName = localStorage.getItem('chat-name') || '';
 
   function refreshMessages() {
-    fetchChatMessages(slug).then((messages) => {
+    return fetchChatMessages(slug).then((messages) => {
       messagesEl.innerHTML = '';
       if (!messages.length) {
         messagesEl.innerHTML = '<p class="chat-empty">No messages yet.</p>';
@@ -115,6 +115,7 @@ export function createChatSection(proposal) {
         });
         messagesEl.scrollTop = messagesEl.scrollHeight;
       }
+      container.classList.add('chat-ready');
     });
   }
 
