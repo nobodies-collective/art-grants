@@ -77,10 +77,10 @@
   display: flex;
   gap: 0.3rem;
   margin-left: auto;
-  opacity: 0;
+  opacity: 0.5;
 }
 
-.chat-message:hover .chat-message-actions {
+.chat-message-actions:hover {
   opacity: 1;
 }
 
@@ -380,6 +380,6 @@
   }
 
   .chat-message-actions {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }
