@@ -113,7 +113,7 @@ export function createChatSection(proposal) {
         messages.forEach((msg) => {
           messagesEl.appendChild(renderMessage(msg, slug, refreshMessages));
         });
-        messagesEl.scrollTop = messagesEl.scrollHeight;
+        // no scroll — messages flow naturally in the page
       }
       container.classList.add('chat-ready');
     });

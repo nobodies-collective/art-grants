@@ -128,7 +128,7 @@
 }
 
 .project-page .chat-messages {
-  max-height: 500px;
+  /* no max-height — messages flow naturally, form stays below */
 }
 
 @media (min-width: 1100px) {
