@@ -1,4 +1,4 @@
-import { CSV_URL, PLACEHOLDER_IMAGE_BASE } from './constants.js';
+import { CSV_URL } from './constants.js';
 import { parseCSV, findColumn, generateSlug } from './utils.js';
 
 const CACHE_KEY = 'art-grants-csv';

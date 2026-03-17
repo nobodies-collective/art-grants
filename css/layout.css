@@ -105,12 +105,6 @@ h1 {
   max-width: 50vw;
 }
 
-.intro-label {
-  font-size: var(--font-size);
-  letter-spacing: 0.02em;
-  margin: 0 0 0.5rem;
-}
-
 .intro p {
   font-size: var(--font-size);
   line-height: 1.45;

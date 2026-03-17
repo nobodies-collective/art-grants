@@ -226,16 +226,6 @@
   outline: none;
 }
 
-.chat-form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.chat-author {
-  flex: 1;
-}
-
 .chat-name {
   flex: 1;
 }
@@ -256,21 +246,6 @@
   resize: none;
   min-height: 5rem;
   overflow-y: auto;
-}
-
-.chat-hints {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 0.75rem;
-  color: var(--text);
-  opacity: 0.35;
-  line-height: 1.4;
-}
-
-.chat-hints kbd {
-  font-family: inherit;
-  padding: 0.1em 0.3em;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
 }
 
 .chat-send {
@@ -365,18 +340,10 @@
 }
 
 @media (max-width: 600px) {
-  .chat-form-row {
-    flex-direction: column;
-  }
-
   .chat-message-time {
     margin-left: 0;
     width: 100%;
     margin-top: 0.1rem;
-  }
-
-  .chat-hints {
-    display: none;
   }
 
   .chat-message-actions {
