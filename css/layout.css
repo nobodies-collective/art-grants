@@ -276,4 +276,8 @@ h1 {
   #proposals-list {
     grid-template-columns: 1fr;
   }
+
+  .card-thumb {
+    display: none;
+  }
 }
