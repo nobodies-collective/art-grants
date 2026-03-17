@@ -244,6 +244,7 @@ h1 {
 
   .sidebar {
     background: none;
+    padding: 0;
   }
 
   .proposal-card {
