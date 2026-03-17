@@ -20,7 +20,7 @@
 
 // ─── Configuration ────────────────────────────────────────────────────
 
-var SITE_URL = 'https://nobodies-collective.github.io/art-grants';
+var SITE_URL = 'https://art.nobodies.team';
 var FORM_SPREADSHEET_ID = '1_C6spAHXZodFPOWUzI15-JB43rnFywM5hQo5kS9AMKw';
 var FORM_TAB_NAME = 'Art Grants';
 var NOTIFY_EMAIL = 'art@nobodies.team';
@@ -78,7 +78,6 @@ function sendNotifications(project, authorName, message) {
 
       var title = titleIdx !== -1 ? (data[i][titleIdx] || project).toString() : project;
 
-      // Derive year for URL
       var year = '';
       if (timestampIdx !== -1 && data[i][timestampIdx]) {
         var ts = data[i][timestampIdx];
@@ -91,7 +90,6 @@ function sendNotifications(project, authorName, message) {
         }
       }
 
-      // Collect email addresses: artist + art@nobodies.team
       var emails = [NOTIFY_EMAIL];
 
       if (emailIdx !== -1 && data[i][emailIdx]) {
@@ -106,11 +104,10 @@ function sendNotifications(project, authorName, message) {
       var body = authorName + ' wrote:\n\n' + message + '\n\n---\nView project: ' + projectUrl;
 
       GmailApp.sendEmail(emails.join(','), subject, body);
-
       break;
     }
   } catch (err) {
-    Logger.log('sendNotifications error: ' + err.message);
+    console.log('sendNotifications error: ' + err.message);
   }
 }
 
