@@ -146,6 +146,6 @@
   }
 
   .project-card .detail-text {
-    padding: var(--space);
+    padding: 0;
   }
 }
