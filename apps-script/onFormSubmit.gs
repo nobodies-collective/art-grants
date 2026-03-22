@@ -2,7 +2,7 @@
  * Google Apps Script — Form submission handler for Art Grants
  *
  * This script lives on the FORM RESPONSES spreadsheet.
- * On new submission it sets Slug, Status, Messaging On in the form sheet.
+ * On new submission it sets Slug and Messaging Off in the form sheet.
  *
  * SETUP:
  * 1. Open the Form Responses spreadsheet in Google Sheets
@@ -14,7 +14,7 @@
  */
 
 var FORM_TAB_NAME = 'Art Grants';
-var ADMIN_HEADERS = ['Slug', 'Status', 'Messaging On'];
+var ADMIN_HEADERS = ['Slug', 'Messaging Off'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
@@ -79,8 +79,7 @@ function onFormSubmit(e) {
 
     var titleIdx = findHeaderIndex(headers, ['title']);
     var slugIdx = findHeaderIndex(headers, ['slug']);
-    var statusIdx = findHeaderIndex(headers, ['status']);
-    var messagingOnIdx = findHeaderIndex(headers, ['messaging on']);
+    var messagingOffIdx = findHeaderIndex(headers, ['messaging off']);
 
     if (titleIdx === -1 || slugIdx === -1) return;
 
@@ -91,11 +90,8 @@ function onFormSubmit(e) {
 
     // Set admin fields in form sheet
     sheet.getRange(row, slugIdx + 1).setValue(slug);
-    if (statusIdx !== -1) {
-      sheet.getRange(row, statusIdx + 1).setValue('Under Review');
-    }
-    if (messagingOnIdx !== -1) {
-      sheet.getRange(row, messagingOnIdx + 1).setValue('TRUE');
+    if (messagingOffIdx !== -1) {
+      sheet.getRange(row, messagingOffIdx + 1).setValue('FALSE');
     }
 
     Logger.log('onFormSubmit: processed "' + title + '" (' + slug + ')');

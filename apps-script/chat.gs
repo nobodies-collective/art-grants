@@ -6,13 +6,15 @@
  * to the artist and liaison(s) when a new message is posted.
  *
  * TABS:
- *   "<slug>"   — per-project chat tabs (auto-created, hidden)
+ *   "<slug>"          — per-project chat tabs (auto-created, hidden)
+ *   "_email_queue"    — pending email notifications (auto-created, hidden)
  *
  * SETUP:
  * 1. Open the Chat spreadsheet in Google Sheets
  * 2. Go to Extensions → Apps Script, paste this file
  * 3. Deploy → New deployment → Web app (Execute as: Me, Access: Anyone)
  * 4. Copy deployment URL to js/constants.js as CHAT_SCRIPT_URL
+ * 5. Run setupEmailTrigger() once from the editor to create the 1-min trigger
  *
  * NOTE: Each time you update this script, deploy a NEW version
  * (Deploy → Manage deployments → Edit → New version)
@@ -24,19 +26,13 @@ var SITE_URL = 'https://art.nobodies.team';
 var FORM_SPREADSHEET_ID = '1_C6spAHXZodFPOWUzI15-JB43rnFywM5hQo5kS9AMKw';
 var FORM_TAB_NAME = 'Art Grants';
 var NOTIFY_EMAIL = 'art@nobodies.team';
+var QUEUE_TAB = '_email_queue';
+var DIGEST_TAB = '_digest_queue';
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
 function getSpreadsheet() {
   return SpreadsheetApp.getActiveSpreadsheet();
-}
-
-function escapeHtmlGS(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function jsonResponse(data) {
@@ -55,28 +51,90 @@ function findHeaderIdx(headers, candidates) {
   return -1;
 }
 
-// ─── Email notifications ─────────────────────────────────────────────
+// ─── Email queue ────────────────────────────────────────────────────
 
-function sendNotifications(project, authorName, message) {
-  try {
-    var formSS = SpreadsheetApp.openById(FORM_SPREADSHEET_ID);
-    var sheet = formSS.getSheetByName(FORM_TAB_NAME);
-    if (!sheet) return;
+function getQueueSheet() {
+  var ss = getSpreadsheet();
+  var tab = ss.getSheetByName(QUEUE_TAB);
+  if (!tab) {
+    tab = ss.insertSheet(QUEUE_TAB);
+    tab.appendRow(['Timestamp', 'Project', 'Author', 'Message']);
+    tab.setFrozenRows(1);
+    tab.hideSheet();
+  }
+  return tab;
+}
 
-    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    var data = sheet.getDataRange().getValues();
+function getDigestSheet() {
+  var ss = getSpreadsheet();
+  var tab = ss.getSheetByName(DIGEST_TAB);
+  if (!tab) {
+    tab = ss.insertSheet(DIGEST_TAB);
+    tab.appendRow(['Timestamp', 'Project', 'Author', 'Message']);
+    tab.setFrozenRows(1);
+    tab.hideSheet();
+  }
+  return tab;
+}
 
-    var slugIdx = findHeaderIdx(headers, ['Slug', 'slug']);
-    var emailIdx = findHeaderIdx(headers, ['Email address', 'email address', 'Email Address']);
-    var titleIdx = findHeaderIdx(headers, ['Title', 'title']);
-    var timestampIdx = findHeaderIdx(headers, ['Timestamp', 'timestamp']);
+/** Called from handlePost — queues a notification instead of sending directly */
+function queueNotification(project, authorName, message) {
+  var queue = getQueueSheet();
+  queue.appendRow([new Date(), project, authorName, message]);
+  // Also queue for daily digest to art@nobodies.team
+  var digest = getDigestSheet();
+  digest.appendRow([new Date(), project, authorName, message]);
+}
 
-    if (slugIdx === -1) return;
+/** Run by time-driven trigger every minute — sends queued emails */
+function processEmailQueue() {
+  var queue = getQueueSheet();
+  if (queue.getLastRow() < 2) return;
+
+  var rows = queue.getDataRange().getValues();
+  var formSS = SpreadsheetApp.openById(FORM_SPREADSHEET_ID);
+  var sheet = formSS.getSheetByName(FORM_TAB_NAME);
+  if (!sheet) return;
+
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var data = sheet.getDataRange().getValues();
+
+  var slugIdx = findHeaderIdx(headers, ['Slug', 'slug']);
+  var emailIdx = findHeaderIdx(headers, ['Email address', 'email address', 'Email Address']);
+  var titleIdx = findHeaderIdx(headers, ['Title', 'title']);
+  var timestampIdx = findHeaderIdx(headers, ['Timestamp', 'timestamp']);
+  var messagingOffIdx = findHeaderIdx(headers, ['Messaging Off', 'messaging off']);
+
+  if (slugIdx === -1) return;
+
+  for (var q = 1; q < rows.length; q++) {
+    var project = (rows[q][1] || '').toString().trim();
+    var authorName = (rows[q][2] || '').toString().trim();
+    var message = (rows[q][3] || '').toString().trim();
+    if (!project) continue;
 
     for (var i = 1; i < data.length; i++) {
-      if ((data[i][slugIdx] || '').toString().trim() !== project) continue;
+      var rowSlug = (data[i][slugIdx] || '').toString().trim();
+      if (rowSlug !== project) continue;
+
+      // Skip if messaging is turned off for this project
+      if (messagingOffIdx !== -1) {
+        var msgOff = (data[i][messagingOffIdx] || '').toString().trim().toUpperCase();
+        if (msgOff === 'TRUE') break;
+      }
 
       var title = titleIdx !== -1 ? (data[i][titleIdx] || project).toString() : project;
+      // Only send individual emails to the artist (not art@nobodies.team — that gets a daily digest)
+      var emails = [];
+
+      if (emailIdx !== -1 && data[i][emailIdx]) {
+        data[i][emailIdx].toString().split(',').forEach(function(e) {
+          var trimmed = e.trim();
+          if (trimmed && trimmed !== NOTIFY_EMAIL && emails.indexOf(trimmed) === -1) emails.push(trimmed);
+        });
+      }
+
+      if (emails.length === 0) break;
 
       var year = '';
       if (timestampIdx !== -1 && data[i][timestampIdx]) {
@@ -90,25 +148,143 @@ function sendNotifications(project, authorName, message) {
         }
       }
 
-      var emails = [NOTIFY_EMAIL];
-
-      if (emailIdx !== -1 && data[i][emailIdx]) {
-        data[i][emailIdx].toString().split(',').forEach(function(e) {
-          var trimmed = e.trim();
-          if (trimmed && emails.indexOf(trimmed) === -1) emails.push(trimmed);
-        });
-      }
-
       var projectUrl = SITE_URL + (year ? '/' + year : '') + '/' + project;
       var subject = 'New message on "' + title + '"';
       var body = authorName + ' wrote:\n\n' + message + '\n\n---\nView project: ' + projectUrl;
 
       GmailApp.sendEmail(emails.join(','), subject, body);
+      console.log('Email sent to ' + emails.join(', ') + ' for project ' + project);
       break;
     }
-  } catch (err) {
-    console.log('sendNotifications error: ' + err.message);
   }
+
+  // Clear queue
+  if (queue.getLastRow() > 1) {
+    queue.deleteRows(2, queue.getLastRow() - 1);
+  }
+}
+
+/** Run once from editor to create the 1-minute trigger for processing email queue */
+function setupEmailTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'processEmailQueue') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger('processEmailQueue')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+  console.log('Email queue trigger created (every 1 minute)');
+}
+
+// ─── Daily digest ──────────────────────────────────────────────────────
+
+/** Run by time-driven trigger at 06:00 — sends a single summary email to art@nobodies.team */
+function processDailyDigest() {
+  var digest = getDigestSheet();
+  if (digest.getLastRow() < 2) return;
+
+  var rows = digest.getDataRange().getValues();
+
+  // Look up project titles from the form spreadsheet
+  var formSS = SpreadsheetApp.openById(FORM_SPREADSHEET_ID);
+  var sheet = formSS.getSheetByName(FORM_TAB_NAME);
+  var titleMap = {};
+  var yearMap = {};
+  if (sheet) {
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var data = sheet.getDataRange().getValues();
+    var slugIdx = findHeaderIdx(headers, ['Slug', 'slug']);
+    var titleIdx = findHeaderIdx(headers, ['Title', 'title']);
+    var timestampIdx = findHeaderIdx(headers, ['Timestamp', 'timestamp']);
+    if (slugIdx !== -1) {
+      for (var i = 1; i < data.length; i++) {
+        var slug = (data[i][slugIdx] || '').toString().trim();
+        if (slug) {
+          titleMap[slug] = titleIdx !== -1 ? (data[i][titleIdx] || slug).toString() : slug;
+          if (timestampIdx !== -1 && data[i][timestampIdx]) {
+            var ts = data[i][timestampIdx];
+            if (ts instanceof Date) {
+              yearMap[slug] = ts.getFullYear().toString();
+            } else {
+              var dmyMatch = ts.toString().match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+              if (dmyMatch) yearMap[slug] = dmyMatch[3];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Group messages by project
+  var grouped = {};
+  var projectOrder = [];
+  for (var q = 1; q < rows.length; q++) {
+    var project = (rows[q][1] || '').toString().trim();
+    if (!project) continue;
+    if (!grouped[project]) {
+      grouped[project] = [];
+      projectOrder.push(project);
+    }
+    grouped[project].push({
+      timestamp: rows[q][0],
+      author: (rows[q][2] || '').toString().trim(),
+      message: (rows[q][3] || '').toString().trim()
+    });
+  }
+
+  if (projectOrder.length === 0) {
+    if (digest.getLastRow() > 1) digest.deleteRows(2, digest.getLastRow() - 1);
+    return;
+  }
+
+  // Build summary email
+  var totalMessages = 0;
+  var body = '';
+  for (var p = 0; p < projectOrder.length; p++) {
+    var proj = projectOrder[p];
+    var title = titleMap[proj] || proj;
+    var year = yearMap[proj] || '';
+    var projectUrl = SITE_URL + (year ? '/' + year : '') + '/' + proj;
+    var msgs = grouped[proj];
+    totalMessages += msgs.length;
+
+    body += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+    body += title + ' (' + msgs.length + ' message' + (msgs.length > 1 ? 's' : '') + ')\n';
+    body += projectUrl + '\n\n';
+
+    for (var m = 0; m < msgs.length; m++) {
+      body += '  ' + msgs[m].author + ': ' + msgs[m].message + '\n';
+    }
+    body += '\n';
+  }
+
+  var subject = 'Art Grants digest: ' + totalMessages + ' message' + (totalMessages > 1 ? 's' : '') + ' across ' + projectOrder.length + ' project' + (projectOrder.length > 1 ? 's' : '');
+  GmailApp.sendEmail(NOTIFY_EMAIL, subject, body);
+  console.log('Daily digest sent to ' + NOTIFY_EMAIL + ': ' + totalMessages + ' messages');
+
+  // Clear digest queue
+  if (digest.getLastRow() > 1) {
+    digest.deleteRows(2, digest.getLastRow() - 1);
+  }
+}
+
+/** Run once from editor to create the daily 06:00 trigger for digest emails */
+function setupDailyDigestTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'processDailyDigest') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger('processDailyDigest')
+    .timeBased()
+    .atHour(6)
+    .everyDays(1)
+    .create();
+  console.log('Daily digest trigger created (06:00 every day)');
 }
 
 // ─── Chat API ─────────────────────────────────────────────────────────
@@ -152,8 +328,8 @@ function handlePost(ss, project, name, message, token) {
 
   tab.appendRow([new Date(), name, '', message, token]);
 
-  // Send email notifications
-  sendNotifications(project, name, message);
+  // Queue email notification (processed by trigger, not in web app context)
+  queueNotification(project, name, message);
 
   return jsonResponse({ ok: true });
 }
@@ -208,7 +384,6 @@ function doGet(e) {
 
     var ss = getSpreadsheet();
 
-    // Actions that modify data (via GET for cross-origin compatibility)
     if (action === 'post' || action === 'edit' || action === 'delete') {
       var name = (e.parameter.name || '').trim();
       if (!project) return jsonResponse({ error: 'Missing project' });
@@ -224,7 +399,6 @@ function doGet(e) {
       }
     }
 
-    // Default: fetch messages (no auth required)
     if (!project) return jsonResponse({ error: 'Missing project parameter' });
 
     var tab = ss.getSheetByName(project);
