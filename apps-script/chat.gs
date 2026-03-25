@@ -147,8 +147,9 @@ function processEmailQueue() {
           if (dmyMatch) year = dmyMatch[3];
         }
       }
+      if (!year) year = new Date().getFullYear().toString();
 
-      var projectUrl = SITE_URL + (year ? '/' + year : '') + '/' + project;
+      var projectUrl = SITE_URL + '/' + year + '/' + project;
       var subject = 'New message on "' + title + '"';
       var body = authorName + ' wrote:\n\n' + message + '\n\n---\nView project: ' + projectUrl;
 
@@ -246,8 +247,8 @@ function processDailyDigest() {
   for (var p = 0; p < projectOrder.length; p++) {
     var proj = projectOrder[p];
     var title = titleMap[proj] || proj;
-    var year = yearMap[proj] || '';
-    var projectUrl = SITE_URL + (year ? '/' + year : '') + '/' + proj;
+    var year = yearMap[proj] || new Date().getFullYear().toString();
+    var projectUrl = SITE_URL + '/' + year + '/' + proj;
     var msgs = grouped[proj];
     totalMessages += msgs.length;
 

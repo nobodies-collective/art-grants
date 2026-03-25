@@ -21,7 +21,11 @@ const BASE_PATH = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '').rep
 function getProposalFromPath() {
   const path = window.location.pathname;
   const match = path.match(/\/(\d{4})\/([^/]+)\/?$/);
-  return match ? { year: match[1], slug: match[2] } : null;
+  if (match) return { year: match[1], slug: match[2] };
+  // Support slug-only paths (e.g. from old email links missing the year)
+  const slugOnly = path.replace(BASE_PATH, '').replace(/^\/+|\/+$/g, '');
+  if (slugOnly && !slugOnly.includes('/')) return { year: null, slug: slugOnly };
+  return null;
 }
 
 function proposalUrl(proposal) {
@@ -70,9 +74,15 @@ function attachEventListeners() {
         state.currentProjectPage.remove();
         state.currentProjectPage = null;
       }
-      const proposal = state.proposalData.find(
-        (item) => item.slug === info.slug && (item.year || 'unknown') === info.year
-      );
+      let proposal;
+      if (info.year) {
+        proposal = state.proposalData.find(
+          (item) => item.slug === info.slug && (item.year || 'unknown') === info.year
+        );
+      } else {
+        proposal = state.proposalData.find((item) => item.slug === info.slug);
+        if (proposal) history.replaceState(null, '', proposalUrl(proposal) + window.location.hash);
+      }
       if (proposal) openProposalPage(proposal, { skipPushState: true });
     } else {
       if (state.currentProjectPage) {
@@ -182,9 +192,18 @@ async function loadData() {
 
     const initialInfo = getProposalFromPath();
     if (initialInfo) {
-      const initialProposal = state.proposalData.find(
-        (item) => item.slug === initialInfo.slug && (item.year || 'unknown') === initialInfo.year
-      );
+      let initialProposal;
+      if (initialInfo.year) {
+        initialProposal = state.proposalData.find(
+          (item) => item.slug === initialInfo.slug && (item.year || 'unknown') === initialInfo.year
+        );
+      } else {
+        // Slug-only URL (e.g. from old email links) — find by slug and fix the URL
+        initialProposal = state.proposalData.find((item) => item.slug === initialInfo.slug);
+        if (initialProposal) {
+          history.replaceState(null, '', proposalUrl(initialProposal) + window.location.hash);
+        }
+      }
       if (initialProposal) {
         openProposalPage(initialProposal);
       }

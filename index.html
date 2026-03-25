@@ -13,7 +13,13 @@
     <script>
       // Set base href so relative asset paths work on deep SPA routes
       var base = document.createElement('base');
-      base.href = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '/');
+      // Strip /year/slug (or slug-only) to get the site root for relative assets
+      var stripped = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '/');
+      // If path wasn't a year/slug route, it may be a slug-only fallback — use root
+      if (stripped === window.location.pathname && window.location.pathname !== '/') {
+        stripped = '/';
+      }
+      base.href = stripped;
       document.head.appendChild(base);
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -11,11 +11,13 @@
       var search = window.location.search;
       var hash = window.location.hash;
       sessionStorage.setItem('spa-redirect', path + search + hash);
-      window.location.replace(
-        window.location.origin +
-          path.replace(/\/\d{4}\/[^/]+\/?$/, '') +
-          '/'
-      );
+      var base = path.replace(/\/\d{4}\/[^/]+\/?$/, '');
+      // If the path didn't match the expected /year/slug pattern, redirect to root
+      // to avoid an infinite loop (e.g. links missing the year prefix)
+      if (base === path || base === path.replace(/\/?$/, '')) {
+        base = '/';
+      }
+      window.location.replace(window.location.origin + base);
     </script>
   </head>
   <body></body>
