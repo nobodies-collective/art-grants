@@ -94,6 +94,20 @@ function onFormSubmit(e) {
       sheet.getRange(row, messagingOffIdx + 1).setValue('FALSE');
     }
 
+    // Notify art team
+    var artistIdx = findHeaderIndex(headers, ['name', 'artist name', 'artist']);
+    var artist = artistIdx !== -1 ? sheet.getRange(row, artistIdx + 1).getValue().toString().trim() : '';
+    MailApp.sendEmail({
+      to: 'artgrants@nobodies.team',
+      subject: 'New Art Proposal: ' + title,
+      body: 'A new art grant proposal has been submitted.\n\n'
+        + 'Title: ' + title + '\n'
+        + (artist ? 'Artist: ' + artist + '\n' : '')
+        + '\nReview the proposal in the spreadsheet:\n'
+        + 'https://docs.google.com/spreadsheets/d/1_C6spAHXZodFPOWUzI15-JB43rnFywM5hQo5kS9AMKw/edit?resourcekey=&gid=573795303#gid=573795303\n\n'
+        + 'If the proposal looks good, tick the Visible checkbox in the far right column to publish it on the website.'
+    });
+
     Logger.log('onFormSubmit: processed "' + title + '" (' + slug + ')');
   } catch (err) {
     Logger.log('onFormSubmit error: ' + err.message);
