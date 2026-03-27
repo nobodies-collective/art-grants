@@ -225,7 +225,7 @@ h1 {
 #proposals-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: calc(var(--space) * 0.75);
+  gap: var(--space);
   width: 100%;
   justify-items: stretch;
 }

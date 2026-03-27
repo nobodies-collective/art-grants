@@ -120,6 +120,11 @@ export function mapRowToProposal(row, headers, index = null) {
     comments: findColumn(row, headers, ['Comments', 'comments']),
     coverImage: imageUrl,
     images,
+    visible: (() => {
+      const val = findColumn(row, headers, ['Visible', 'visible']);
+      if (!val) return true; // default: visible
+      return val.toLowerCase() === 'true';
+    })(),
     messagingOn: (() => {
       const off = findColumn(row, headers, ['Messaging Off', 'messaging off']);
       if (off) return off.toLowerCase() !== 'true';

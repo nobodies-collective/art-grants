@@ -165,7 +165,7 @@ async function loadData() {
       return;
     }
 
-    state.proposalData = rows.map((row, index) => mapRowToProposal(row, headers, index));
+    state.proposalData = rows.map((row, index) => mapRowToProposal(row, headers, index)).filter(p => p.visible);
     buildYearFilters();
     updateProposalCount(state.proposalData.length, state.proposalData.length);
     applyFiltersAndRender();
@@ -485,12 +485,12 @@ function createProposalCard(
     : '';
 
   const imageHTML = proposal.coverImage
-    ? `<img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async">`
+    ? `<a href="${proposal.coverImage}" target="_blank" rel="noopener"><img class="cover-image" src="${proposal.coverImage}" alt="${escapeHtml(proposal.title)}" loading="lazy" decoding="async"></a>`
     : '';
 
   const galleryHTML = proposal.images && proposal.images.length > 1
     ? `<div class="detail-gallery">${proposal.images.map((url, i) =>
-        `<img class="gallery-image" src="${url}" alt="${escapeHtml(proposal.title)} ${i + 1}" loading="lazy" decoding="async">`
+        `<a href="${url}" target="_blank" rel="noopener"><img class="gallery-image" src="${url}" alt="${escapeHtml(proposal.title)} ${i + 1}" loading="lazy" decoding="async"></a>`
       ).join('')}</div>`
     : '';
 
