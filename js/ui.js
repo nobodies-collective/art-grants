@@ -425,6 +425,7 @@ function buildDetailSections(proposal) {
     { label: 'Placement Preferences', value: proposal.placementPreferences },
     { label: 'Technology', value: proposal.technology },
     { label: 'Power', value: proposal.power },
+    { label: 'Power (Watt)', value: proposal.powerWatt ? `${proposal.powerWatt} W` : '' },
     { label: 'Sound', value: proposal.sound },
     { label: 'Safety & Risk Management', value: proposal.safety },
     { label: 'Total Project Budget', value: proposal.totalProjectBudget ? `\u20ac${proposal.totalProjectBudget}` : '', dividerBefore: true },

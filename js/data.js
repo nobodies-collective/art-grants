@@ -112,6 +112,7 @@ export function mapRowToProposal(row, headers, index = null) {
     placementPreferences: findColumn(row, headers, ['Placement Preferences', 'placement preferences']),
     technology: findColumn(row, headers, ['Technology', 'technology']),
     power: findColumn(row, headers, ['Power', 'power']),
+    powerWatt: findColumn(row, headers, ['Power (Watt)', 'power (watt)']),
     experienceInteraction: findColumn(row, headers, ['Experience & Interaction', 'Experience &amp; Interaction']),
     totalProjectBudget: findColumn(row, headers, ['Total Project Budget', 'total project budget']),
     grantRequest: findColumn(row, headers, ['Grant Request', 'Grant Request (EUR)', 'Grant Request (EUR) ']),

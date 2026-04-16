@@ -13,11 +13,12 @@
     <script>
       // Set base href so relative asset paths work on deep SPA routes
       var base = document.createElement('base');
-      // Strip /year/slug (or slug-only) to get the site root for relative assets
-      var stripped = window.location.pathname.replace(/\/\d{4}\/[^/]+\/?$/, '/');
-      // If path wasn't a year/slug route, it may be a slug-only fallback — use root
-      if (stripped === window.location.pathname && window.location.pathname !== '/') {
-        stripped = '/';
+      // Strip /year/slug deep route to get the directory base for relative assets
+      var path = window.location.pathname;
+      var stripped = path.replace(/\/\d{4}\/[^/]+\/?$/, '/');
+      // Slug-only fallback (no trailing slash) — strip last segment to get directory
+      if (stripped === path && !path.endsWith('/')) {
+        stripped = path.replace(/[^/]*$/, '');
       }
       base.href = stripped;
       document.head.appendChild(base);
